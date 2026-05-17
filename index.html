@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OGEA Outreach Portal - Darul Hidaya Dawa College</title>
+    <meta name="description" content="Empowering Academic Excellence Through Outreach & Recognition">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+    <!-- Main Stylesheet -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- ==================== NAVIGATION ==================== -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <a href="#home" class="nav-logo">
+                <div class="logo-icon"><span>OG</span></div>
+                <div class="logo-text"><h1>OGEA</h1><p>Darul Hidaya Dawa College</p></div>
+            </a>
+            <ul class="nav-menu" id="navMenu">
+                <li><a href="#home" class="nav-link active">Home</a></li>
+                <li><a href="#programs" class="nav-link">Updates</a></li>
+                <li><a href="#publications" class="nav-link">Publication Directory</a></li>
+                <li><a href="#submit-achievement" class="nav-link">Submit Achievement</a></li>
+                <li><a href="#points-table" class="nav-link">Points Table</a></li>
+                <li><a href="#achievers" class="nav-link">Achievers</a></li>
+            </ul>
+            <div class="nav-actions">
+                <!-- ✅ FIXED: Admin link goes to login page -->
+                <a href="admin-login.html" class="btn-admin-nav"><i class="fas fa-lock"></i> Admin</a>
+                <button class="mobile-toggle" id="mobileToggle"><i class="fas fa-bars"></i></button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ==================== HERO ==================== -->
+    <section class="hero" id="home">
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <h1 class="hero-title">Empowering Academic Excellence</h1>
+            <p class="hero-subtitle">A unified institutional platform designed to encourage academic excellence, literary creativity, outreach engagement, and student achievements through a transparent credit-based recognition system.</p>
+            <div class="hero-buttons">
+                <a href="#programs" class="btn btn-gold btn-lg"><i class="fas fa-compass"></i> Explore Updates</a>
+                <a href="#submit-achievement" class="btn btn-white btn-lg"><i class="fas fa-paper-plane"></i> Submit Achievement</a>
+            </div>
+        </div>
+        <div class="hero-scroll"><a href="#stats"><i class="fas fa-chevron-down"></i></a></div>
+    </section>
+
+    <!-- ==================== STATS ==================== -->
+    <section class="stats" id="stats">
+        <div class="container">
+            <div class="stats-grid">
+                <div class="stat-card"><div class="stat-icon">📋</div><h3 class="stat-number" data-target="9">0</h3><p class="stat-label">Active Programs</p></div>
+                <div class="stat-card"><div class="stat-icon">📚</div><h3 class="stat-number" data-target="45">0</h3><p class="stat-label">Publication Directory</p></div>
+                <div class="stat-card"><div class="stat-icon">🏆</div><h3 class="stat-number" data-target="1">0</h3><p class="stat-label">Achievers</p></div>
+                <div class="stat-card"><div class="stat-icon">⭐</div><h3 class="stat-number" data-target="2">0</h3><p class="stat-label">Credits Awarded</p></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== PROGRAMS / UPDATES ==================== -->
+    <section class="programs-section" id="programs">
+        <div class="container">
+            <div class="section-header"><h2 class="section-title">Latest Updates</h2><p class="section-subtitle">Stay informed about upcoming programs, competitions, and events</p></div>
+            <div class="programs-grid" id="programsGrid">
+                <div class="program-card"><div class="program-image"><span>U</span></div><div class="program-body"><span class="program-status status-upcoming">Upcoming</span><h3 class="program-title">USWATHUNABI</h3><p class="program-date"><i class="far fa-calendar"></i> TBA</p><p class="program-desc">A blessed program celebrating the life and teachings of Prophet Muhammad ﷺ</p></div></div>
+                <div class="program-card"><div class="program-image"><span>Q</span></div><div class="program-body"><span class="program-status status-upcoming">Upcoming</span><h3 class="program-title">QUIZ COMPETITION</h3><p class="program-date"><i class="far fa-calendar"></i> TBA</p><p class="program-desc">Test your knowledge and compete with fellow students</p></div></div>
+                <div class="program-card"><div class="program-image"><span>Q</span></div><div class="program-body"><span class="program-status status-upcoming">Upcoming</span><h3 class="program-title">QURAN TALENT SHOW</h3><p class="program-date"><i class="far fa-calendar"></i> TBA</p><p class="program-desc">Showcase your Quranic recitation and memorization talents</p></div></div>
+                <div class="program-card"><div class="program-image"><span>V</span></div><div class="program-body"><span class="program-status status-upcoming">Upcoming</span><h3 class="program-title">VIDEO MAKING CONTEST</h3><p class="program-date"><i class="far fa-calendar"></i> TBA</p><p class="program-desc">Create impactful videos on Islamic and social themes</p></div></div>
+                <div class="program-card"><div class="program-image"><span>K</span></div><div class="program-body"><span class="program-status status-upcoming">Upcoming</span><h3 class="program-title">KAVALI</h3><p class="program-date"><i class="far fa-calendar"></i> TBA</p><p class="program-desc">Traditional poetic expression competition</p></div></div>
+                <div class="program-card"><div class="program-image"><span>KR</span></div><div class="program-body"><span class="program-status status-upcoming">Upcoming</span><h3 class="program-title">KAVITHA RAJANA</h3><p class="program-date"><i class="far fa-calendar"></i> TBA</p><p class="program-desc">Poetry recitation and creative writing competition</p></div></div>
+                <div class="program-card"><div class="program-image"><span>KM</span></div><div class="program-body"><span class="program-status status-upcoming">Upcoming</span><h3 class="program-title">KATHA MALSARAM 2026</h3><p class="program-date"><i class="far fa-calendar"></i> TBA</p><p class="program-desc">Storytelling competition showcasing narrative excellence</p></div></div>
+                <div class="program-card"><div class="program-image"><span>HQ</span></div><div class="program-body"><span class="program-status status-upcoming">Upcoming</span><h3 class="program-title">INDIA HOLY QURAN AWARD 2026</h3><p class="program-date"><i class="far fa-calendar"></i> TBA</p><p class="program-desc">National level Quran competition for talented reciters</p></div></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== BADGES ==================== -->
+    <section class="badges-section">
+        <div class="container">
+            <div class="section-header"><h2 class="section-title">Outreach Credit Badges</h2><p class="section-subtitle">Earn credits, unlock badges and rewards</p></div>
+            <div class="badges-grid">
+                <div class="badge-card badge-champion"><div class="badge-icon">🥇</div><h3>Champion Badge</h3><div class="badge-credits">100 Credits</div><p>One Friday leave or recovery of one previously lost leave</p></div>
+                <div class="badge-card badge-star"><div class="badge-icon">🌟</div><h3>Star Badge</h3><div class="badge-credits">200 Credits</div><p>Stationery kit or Al Ameen voucher along with certificate</p></div>
+                <div class="badge-card badge-master"><div class="badge-icon">💎</div><h3>Master Badge</h3><div class="badge-credits">300 Credits</div><p>₹500 cash reward along with certificate and framed recognition</p></div>
+                <div class="badge-card badge-legendary"><div class="badge-icon">👑</div><h3>Legendary Badge</h3><div class="badge-credits">400 – 450 Credits</div><p>₹1500 cash reward along with certificate and framed recognition</p></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== SUBMIT ACHIEVEMENT ==================== -->
+    <section class="submit-section" id="submit-achievement">
+        <div class="container">
+            <div class="section-header"><h2 class="section-title">Submit an Achievement</h2><p class="section-subtitle">Open to everyone — no account needed.</p></div>
+            <div class="form-container">
+                <form id="achievementForm" class="achievement-form">
+                    <div class="form-row">
+                        <div class="form-group"><label for="fullName">Full name <span class="required">*</span></label><input type="text" id="fullName" name="fullName" required placeholder="Enter your full name"></div>
+                        <div class="form-group"><label for="class">Class <span class="required">*</span></label><input type="text" id="class" name="class" required placeholder="e.g. Plus Two A"></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label for="admissionNo">Admission No. <span class="required">*</span></label><input type="text" id="admissionNo" name="admissionNo" required placeholder="Your unique admission number"></div>
+                        <div class="form-group"><label for="contact">Contact (email / phone)</label><input type="text" id="contact" name="contact" placeholder="Email or phone number"></div>
+                    </div>
+                    <div class="form-group"><label for="dateOfActivity">Date of activity</label><input type="date" id="dateOfActivity" name="dateOfActivity" placeholder="dd-mm-yyyy"></div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="category">Category <span class="required">*</span></label>
+                            <select id="category" name="category" required>
+                                <option value="">Select...</option>
+                                <option value="paper_presentation">Paper Presentation</option>
+                                <option value="research_article">Research Article</option>
+                                <option value="poem_story_essay">Poem / Story / Essay</option>
+                                <option value="blog">Blog Post</option>
+                                <option value="book">Book</option>
+                                <option value="media_contribution">Media Contribution</option>
+                                <option value="creative_work">Creative Work</option>
+                                <option value="competition">Competition</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group"><label for="activityTitle">Activity / Title <span class="required">*</span></label><input type="text" id="activityTitle" name="activityTitle" required placeholder="e.g. Climate change essay"></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="level">Level</label>
+                            <select id="level" name="level">
+                                <option value="">—</option>
+                                <option value="international">International</option>
+                                <option value="national">National</option>
+                                <option value="state">State</option>
+                                <option value="local">Local</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="platform">Platform / Publisher</label>
+                            <select id="platform" name="platform">
+                                <option value="">—</option>
+                                <option value="isbn_book">ISBN Book</option>
+                                <option value="issn_journal">ISSN Journal</option>
+                                <option value="periodicals">Periodicals</option>
+                                <option value="magazines">Magazines</option>
+                                <option value="newspaper">Newspaper / News Portal</option>
+                                <option value="online">Online Platform</option>
+                                <option value="educational_blog">Recognised Educational Blog</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="result">Result</label>
+                            <select id="result" name="result">
+                                <option value="">—</option>
+                                <option value="1st">1st</option>
+                                <option value="2nd">2nd</option>
+                                <option value="3rd">3rd</option>
+                                <option value="presented">Presented</option>
+                                <option value="participation">Participation</option>
+                                <option value="published">Published</option>
+                                <option value="accepted">Accepted</option>
+                                <option value="selected">Selected</option>
+                                <option value="shortlisted">Shortlisted</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="language">Language</label>
+                            <select id="language" name="language">
+                                <option value="">Select Language</option>
+                                <option value="english">English</option>
+                                <option value="malayalam">Malayalam</option>
+                                <option value="arabic">Arabic</option>
+                                <option value="hindi">Hindi</option>
+                                <option value="urdu">Urdu</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group"><label for="referenceLink">Reference link</label><input type="url" id="referenceLink" name="referenceLink" placeholder="https://"></div>
+                    <div class="form-group"><label for="proofFile">Proof (image or PDF)</label><div class="file-upload-wrapper"><input type="file" id="proofFile" name="proofFile" accept="image/*,.pdf"><label for="proofFile" class="file-upload-label"><i class="fas fa-cloud-upload-alt"></i><span>Choose file</span></label><span id="fileName" class="file-name">No file chosen</span></div></div>
+                    <div class="form-group"><label for="notes">Notes</label><textarea id="notes" name="notes" rows="3" placeholder="Any additional notes..."></textarea></div>
+                    <div class="form-notice"><i class="fas fa-info-circle"></i> No proof attached</div>
+                    <button type="submit" class="btn btn-primary btn-block"><i class="fas fa-paper-plane"></i> Submit Achievement</button>
+                </form>
+                <div id="submitSuccess" class="success-message" style="display:none;"><div class="success-icon">✅</div><h3>Submission Successful!</h3><p>Your achievement has been submitted and will be reviewed by our team.</p><button class="btn btn-primary" onclick="resetForm()">Submit Another</button></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== STUDENT PUBLICATION DIRECTORY ==================== -->
+    <section class="publications-section" id="publications">
+        <div class="container">
+            <div class="section-header"><h2 class="section-title">Student Publication Directory</h2><p class="section-subtitle">Articles | Essays | Poetry | Stories | Academic | Multi-language Platforms</p></div>
+            <div class="search-bar"><input type="text" id="publicationSearch" placeholder="Search publications…" class="search-input"><i class="fas fa-search search-icon"></i></div>
+            <div class="publications-grid">
+                
+                <!-- 1. ARTICLE & ESSAY PUBLISHERS -->
+                <div class="pub-category">
+                    <h3>📝 1. Article & Essay Publishers</h3>
+                    <span class="pub-subtitle">General / Student-Friendly Platforms</span>
+                    <ul>
+                        <li><strong>Campus Alive</strong> <a href="https://campusalive.net/submit-your-article/" target="_blank">🔗 campusalive.net</a></li>
+                        <li><strong>Utharakalam</strong> <span class="pub-tag">Non-Islamic</span> <a href="https://utharakalam.com" target="_blank">🔗 utharakalam.com</a> <span class="pub-email">📧 utharakaalam@gmail.com</span></li>
+                        <li><strong>Thelicham</strong> <a href="https://thelicham.com" target="_blank">🔗 thelicham.com</a></li>
+                        <li><strong>Tibaq</strong> <a href="https://tibaq.in" target="_blank">🔗 tibaq.in</a></li>
+                        <li><strong>Rushd</strong> <a href="https://www.rushd.in" target="_blank">🔗 rushd.in</a></li>
+                        <li><strong>ALA Blog</strong> <a href="https://alablog.in" target="_blank">🔗 alablog.in</a></li>
+                    </ul>
+                    <span class="pub-subtitle">Major Malayalam Media</span>
+                    <ul>
+                        <li><strong>Malayala Manorama</strong> (Ezhuthidam) <a href="https://www.manoramaonline.com" target="_blank">🔗 manoramaonline.com</a> <span class="pub-email">📧 literature@mm.co.in</span></li>
+                        <li><strong>Madhyamam</strong> <a href="https://www.madhyamam.com" target="_blank">🔗 madhyamam.com</a></li>
+                        <li><strong>Mathrubhumi</strong> <a href="https://www.mathrubhumi.com" target="_blank">🔗 mathrubhumi.com</a></li>
+                    </ul>
+                    <span class="pub-subtitle">Islamic / Knowledge Platforms</span>
+                    <ul>
+                        <li><strong>Islamonweb</strong> <a href="https://islamonweb.net/ml/" target="_blank">🔗 islamonweb.net</a> <span class="pub-email">📧 editorislamonweb@gmail.com</span></li>
+                        <li><strong>About Islam</strong> <a href="https://aboutislam.net" target="_blank">🔗 aboutislam.net</a></li>
+                        <li><strong>OnIslam</strong> <a href="https://onislam.net" target="_blank">🔗 onislam.net</a></li>
+                    </ul>
+                </div>
+
+                <!-- 2. POETRY PUBLISHERS -->
+                <div class="pub-category">
+                    <h3>🎭 2. Poetry Publishers (Fast Response)</h3>
+                    <span class="pub-subtitle">⚡ Quick Response (3–14 Days)</span>
+                    <ul>
+                        <li><strong>Muse India</strong> <span class="pub-email">📧 museindia.editor@gmail.com</span> <a href="https://museindia.com" target="_blank">🔗 museindia.com</a></li>
+                        <li><strong>The Sunflower Collective</strong> <span class="pub-email">📧 thesunflowercollectiveindia@gmail.com</span> <a href="https://thesunflowercollective.com" target="_blank">🔗 thesunflowercollective.com</a></li>
+                        <li><strong>The Alipore Post</strong> <span class="pub-email">📧 thealiporepost@gmail.com</span> <a href="https://www.thealiporepost.com" target="_blank">🔗 thealiporepost.com</a></li>
+                        <li><strong>Live Wire</strong> <span class="pub-tag">Mount Carmel College</span> <span class="pub-email">📧 livewire@mccblr.edu.in</span></li>
+                        <li><strong>Indian Ruminations</strong> <a href="http://indianruminations.com" target="_blank">🔗 indianruminations.com</a></li>
+                        <li><strong>The Bombay Review</strong> <a href="https://thebombayreview.com" target="_blank">🔗 thebombayreview.com</a></li>
+                    </ul>
+                    <span class="pub-subtitle">📌 Malayalam / Regional Poetry</span>
+                    <ul>
+                        <li><strong>eMalayalee</strong> <a href="https://emalayalee.com" target="_blank">🔗 emalayalee.com</a></li>
+                        <li><strong>Thaliru Magazine</strong> <span class="pub-tag">Kids</span> <span class="pub-email">📧 thaliru@ksicl.org</span></li>
+                    </ul>
+                </div>
+
+                <!-- 3. STORY & CREATIVE WRITING -->
+                <div class="pub-category">
+                    <h3>📖 3. Story & Creative Writing Platforms</h3>
+                    <span class="pub-subtitle">⚡ Fast Publishing (1–2 Weeks)</span>
+                    <ul>
+                        <li><strong>Terribly Tiny Tales (TTT)</strong> <span>🔗 Instagram / Submission Form</span></li>
+                        <li><strong>Readomania</strong> <a href="https://www.readomania.com" target="_blank">🔗 readomania.com</a></li>
+                        <li><strong>Writers Pocket</strong> <a href="https://www.writerspocket.in" target="_blank">🔗 writerspocket.in</a></li>
+                        <li><strong>Spillwords Press</strong> <a href="https://spillwords.com/submit/" target="_blank">🔗 spillwords.com</a></li>
+                        <li><strong>Indian Periodical</strong> <span class="pub-email">📧 editor@indianperiodical.com</span> <a href="https://indianperiodical.com" target="_blank">🔗 indianperiodical.com</a></li>
+                    </ul>
+                    <span class="pub-subtitle">Youth & Emotional Writing Platforms</span>
+                    <ul>
+                        <li><strong>Youth Ki Awaaz</strong> <a href="https://www.youthkiawaaz.com" target="_blank">🔗 youthkiawaaz.com</a></li>
+                        <li><strong>Storieo</strong> <a href="https://storieo.com/submit-your-story/" target="_blank">🔗 storieo.com</a></li>
+                        <li><strong>Penmancy</strong> <a href="https://penmancy.com/submit/" target="_blank">🔗 penmancy.com</a></li>
+                        <li><strong>The Story Vault</strong> <a href="https://thestoryvault.in" target="_blank">🔗 thestoryvault.in</a></li>
+                        <li><strong>The Scrawl Magazine</strong> <span class="pub-email">📧 thescrawlmagazine@gmail.com</span></li>
+                    </ul>
+                </div>
+
+                <!-- 4. SELF-PUBLISHING -->
+                <div class="pub-category">
+                    <h3>🚀 4. Open Self-Publishing Platforms (Instant)</h3>
+                    <span class="pub-note">These don't review much — publish immediately. Good for beginners, not prestigious.</span>
+                    <ul>
+                        <li><strong>Pratilipi</strong> <span class="pub-tag">Malayalam</span> <a href="https://malayalam.pratilipi.com/create" target="_blank">🔗 malayalam.pratilipi.com</a></li>
+                        <li><strong>WritersCafe</strong> <a href="https://www.writerscafe.org" target="_blank">🔗 writerscafe.org</a></li>
+                        <li><strong>Commaful</strong> <span class="pub-tag">Visual storytelling</span> <a href="https://commaful.com" target="_blank">🔗 commaful.com</a></li>
+                    </ul>
+                </div>
+
+                <!-- 5. MULTI-LANGUAGE & INTERNATIONAL -->
+                <div class="pub-category">
+                    <h3>🌍 5. Multi-Language & International</h3>
+                    <span class="pub-subtitle">English</span>
+                    <ul>
+                        <li><strong>The Read</strong> <a href="https://the-read.in/" target="_blank">🔗 the-read.in</a> <span class="pub-email">📧 thereadworks@gmail.com</span></li>
+                        <li><strong>The Good Men Project</strong> <span>🔗 Submission page</span></li>
+                        <li><strong>Journal of Islam in Everyday Life</strong> <a href="https://e-journal.elkuator.com/index.php/jiel" target="_blank">🔗 e-journal.elkuator.com</a></li>
+                    </ul>
+                    <span class="pub-subtitle">Arabic</span>
+                    <ul>
+                        <li><strong>Nida ul Hind</strong> <a href="https://www.nidaulhind.com" target="_blank">🔗 nidaulhind.com</a> <span class="pub-email">📧 shammasktpm@gmail.com</span></li>
+                        <li><strong>Ainul Haqq</strong> <a href="https://www.ainul-haqq.com/" target="_blank">🔗 ainul-haqq.com</a> <span class="pub-email">📧 info.ainulhaqq@gmail.com</span></li>
+                    </ul>
+                    <span class="pub-subtitle">Urdu / Hindi</span>
+                    <ul>
+                        <li><strong>Inquilab</strong> <a href="https://www.inquilab.com/contact" target="_blank">🔗 inquilab.com</a> <span class="pub-email">📧 inquilab@mid-day.com</span></li>
+                        <li><strong>Phool Magazine</strong> <span class="pub-tag">Children's Urdu</span> <a href="https://phool.com.pk" target="_blank">🔗 phool.com.pk</a></li>
+                    </ul>
+                </div>
+
+                <!-- 6. ACADEMIC & PROFESSIONAL -->
+                <div class="pub-category">
+                    <h3>🎓 6. Academic & Professional</h3>
+                    <ul>
+                        <li><strong>Academia.edu</strong> <a href="https://www.academia.edu" target="_blank">🔗 academia.edu</a></li>
+                        <li><strong>Routledge</strong> <span class="pub-tag">Book Reviews / Academic</span> <a href="https://www.routledge.com/india" target="_blank">🔗 routledge.com</a></li>
+                    </ul>
+                </div>
+
+                <!-- 7. EMAIL-ONLY -->
+                <div class="pub-category">
+                    <h3>📧 7. Email-Only Submission Platforms</h3>
+                    <ul>
+                        <li><strong>Guide Media</strong> → <span class="pub-email">📧 guidemdia@gmail.com</span></li>
+                        <li><strong>The Limelight</strong> → <span class="pub-email">📧 thelimelightin@gmail.com</span></li>
+                        <li><strong>Children's Magazine</strong> → <span class="pub-email">📧 thechildrensmagazine@gmail.com</span></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== POINTS TABLE ==================== -->
+    <section class="points-section" id="points-table">
+        <div class="container">
+            <div class="section-header"><h2 class="section-title">Outreach Credit System</h2><p class="section-subtitle">Academic and Literary Contributions — points by activity & platform.</p></div>
+            <div class="bonus-box"><h3><i class="fas fa-star"></i> Bonus Points</h3><ul><li>Work in a language other than your native: <strong>+2</strong></li><li>Abstract submission (without acceptance): <strong>+2</strong></li></ul></div>
+            <div class="points-tables">
+                <div class="points-table-card"><h3>1. Academic Presentations — Paper Presentation</h3><table><thead><tr><th>Activity</th><th>Platform / Level</th><th>Points</th></tr></thead><tbody><tr><td>Paper Presentation</td><td>International</td><td>30</td></tr><tr><td>Paper Presentation</td><td>National</td><td>20</td></tr><tr><td>Paper Presentation</td><td>Local</td><td>10</td></tr></tbody></table></div>
+                <div class="points-table-card"><h3>2. Publications — Academic (Research Article)</h3><table><thead><tr><th>Activity</th><th>Platform / Level</th><th>Points</th></tr></thead><tbody><tr><td>Research Article</td><td>ISSN Journal</td><td>30</td></tr><tr><td>Research Article</td><td>Periodicals</td><td>20</td></tr><tr><td>Research Article</td><td>Magazines</td><td>15</td></tr></tbody></table></div>
+                <div class="points-table-card"><h3>3. Publications — Literary (Poem / Story / Essay)</h3><table><thead><tr><th>Activity</th><th>Platform / Level</th><th>Points</th></tr></thead><tbody><tr><td>Poem / Story / Essay</td><td>Magazines</td><td>12</td></tr><tr><td>Poem / Story / Essay</td><td>Periodicals</td><td>12</td></tr><tr><td>Poem / Story / Essay</td><td>Online</td><td>8</td></tr></tbody></table></div>
+                <div class="points-table-card"><h3>4. Blogs & Online Platforms</h3><table><thead><tr><th>Activity</th><th>Platform / Level</th><th>Points</th></tr></thead><tbody><tr><td>Academic blog post</td><td>Recognised Educational blog</td><td>5</td></tr></tbody></table></div>
+                <div class="points-table-card"><h3>5. Books — Authoring or Co-Authoring</h3><table><thead><tr><th>Activity</th><th>Platform / Level</th><th>Points</th></tr></thead><tbody><tr><td>Academic book with ISBN</td><td>—</td><td>40</td></tr><tr><td>Academic without ISBN</td><td>—</td><td>30</td></tr><tr><td>Literary Book</td><td>—</td><td>20</td></tr></tbody></table></div>
+                <div class="points-table-card"><h3>6. Media Contributions</h3><table><thead><tr><th>Activity</th><th>Platform / Level</th><th>Points</th></tr></thead><tbody><tr><td>Article / Essay</td><td>Newspaper / News Portal</td><td>25</td></tr><tr><td>Letter</td><td>—</td><td>8</td></tr><tr><td>Opinions</td><td>—</td><td>8</td></tr></tbody></table></div>
+                <div class="points-table-card"><h3>7. Other Creative Works</h3><table><thead><tr><th>Activity</th><th>Platform / Level</th><th>Points</th></tr></thead><tbody><tr><td>Art / Illustration / Photography</td><td>Recognised platform</td><td>8 – 12</td></tr></tbody></table></div>
+                <div class="points-table-card"><h3>8. Competitions — International</h3><table><thead><tr><th>Activity</th><th>Platform / Level</th><th>Points</th></tr></thead><tbody><tr><td>1st Prize</td><td>International</td><td>30</td></tr><tr><td>2nd Prize</td><td>International</td><td>25</td></tr><tr><td>3rd Prize</td><td>International</td><td>20</td></tr></tbody></table></div>
+                <div class="points-table-card"><h3>9. Competitions — National</h3><table><thead><tr><th>Activity</th><th>Platform / Level</th><th>Points</th></tr></thead><tbody><tr><td>1st Prize</td><td>National</td><td>25</td></tr><tr><td>2nd Prize</td><td>National</td><td>20</td></tr><tr><td>3rd Prize</td><td>National</td><td>15</td></tr></tbody></table></div>
+                <div class="points-table-card"><h3>10. Competitions — State</h3><table><thead><tr><th>Activity</th><th>Platform / Level</th><th>Points</th></tr></thead><tbody><tr><td>1st Prize</td><td>State</td><td>20</td></tr><tr><td>2nd Prize</td><td>State</td><td>15</td></tr><tr><td>3rd Prize</td><td>State</td><td>10</td></tr></tbody></table></div>
+                <div class="points-table-card"><h3>11. Competitions — Local</h3><table><thead><tr><th>Activity</th><th>Platform / Level</th><th>Points</th></tr></thead><tbody><tr><td>1st Prize</td><td>Local</td><td>10</td></tr><tr><td>2nd Prize</td><td>Local</td><td>8</td></tr><tr><td>3rd Prize</td><td>Local</td><td>6</td></tr></tbody></table></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== ACHIEVERS ==================== -->
+     <!-- ==================== ACHIEVERS / WINNERS POSTERS ==================== -->
+    <section class="achievers-section" id="achievers">
+        <div class="container">
+            <div class="section-header"><h2 class="section-title">Achievers</h2><p class="section-subtitle">Ranked by approved achievement points.</p></div>
+            <div class="achievers-empty"><div class="empty-icon">🏆</div><h3>No achievers yet.</h3><p>Be the first to submit your achievement and earn recognition!</p></div>
+            <div class="winners-section">
+                <h3 class="winners-title">Winners Posters</h3>
+                <p class="winners-subtitle">Celebrating our champions across competitions.</p>
+                <div id="winnersPostersContainer">
+                    <!-- Posters loaded dynamically from admin -->
+                    <div class="posters-two-col">
+                        <div class="winners-category">
+                            <h4>🏆 200 Mission</h4>
+                            <p class="winners-tagline"></p>
+                            <div class="public-poster-grid" id="publicMission200Posters">
+                                <div class="winners-empty-box"><p>No posters in "200 Mission" yet.</p></div>
+                            </div>
+                        </div>
+                        <div class="winners-category">
+                            <h4>🎯 1 Student 1 Mission</h4>
+                            <p class="winners-tagline"></p>
+                            <div class="public-poster-grid" id="publicMission1Posters">
+                                <div class="winners-empty-box"><p>No posters in "1 Student 1 Mission" yet.</p></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== MISSION ==================== -->
+    <section class="mission-section">
+        <div class="container">
+            <div class="section-header light"><h2 class="section-title">Our Mission</h2><p class="section-subtitle">OGEA empowers students to engage with society through structured outreach, recognized achievements, and a transparent points-based recognition system — building leaders who serve.</p></div>
+            <div class="mission-grid">
+                <div class="mission-card"><div class="mission-icon">🌍</div><h3>Community Outreach</h3><p>Encouraging students to actively contribute to society through impactful programs, volunteering, and social initiatives.</p></div>
+                <div class="mission-card"><div class="mission-icon">🏆</div><h3>Recognized Achievements</h3><p>Highlighting student accomplishments with a structured system that values participation, leadership, and excellence.</p></div>
+                <div class="mission-card"><div class="mission-icon">📊</div><h3>Transparent Point System</h3><p>Maintaining fairness and accountability through a clear points-based recognition platform for every student activity.</p></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== FOOTER ==================== -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand"><div class="footer-logo"><div class="logo-icon">OG</div><div><h3>OGEA</h3><p>Darul Hidaya Dawa College, Manoor</p></div></div><p class="footer-tagline">Outreach. Excellence. Service.</p></div>
+                <div class="footer-links"><h4>Quick Links</h4><ul><li><a href="#home">Home</a></li><li><a href="#programs">Programs</a></li><li><a href="#publications">Publication Directory</a></li><li><a href="#submit-achievement">Submit Achievement</a></li><li><a href="#points-table">Points Table</a></li><li><a href="#achievers">Achievers</a></li></ul></div>
+                <!-- ✅ FIXED: Footer admin link goes to login page -->
+                <div class="footer-contact"><h4>Admin Access</h4><a href="admin-login.html" class="btn btn-gold"><i class="fas fa-lock"></i> Admin Login</a></div>
+            </div>
+            <div class="footer-bottom"><p>&copy; 2026 OGEA · Darul Hidaya Dawa College</p><p>Outreach. Excellence. Service.</p></div>
+        </div>
+    </footer>
+
+    <button id="backToTop" class="back-to-top"><i class="fas fa-arrow-up"></i></button>
+
+    <script src="script.js"></script>
+</body>
+</html>
