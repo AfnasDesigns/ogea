@@ -35,11 +35,12 @@ app.use(session({
 }));
 
 // ==================== STATIC FILES ====================
-// Serve the frontend files (HTML, CSS, JS)
-app.use(express.static(path.join(__dirname, 'public')));
-
-// Serve uploaded files (fallback for local dev if Cloudinary isn't configured)
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// Only serve static files via Express in local Node.js mode.
+// On Netlify, the CDN handles this automatically and bundling them crashes the deploy.
+if (!process.env.NETLIFY && process.env.NODE_ENV !== 'production') {
+    app.use(express.static(path.join(__dirname, 'public')));
+    app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+}
 
 // ==================== API ROUTES ====================
 // In Netlify functions, the base path is usually /.netlify/functions/api
