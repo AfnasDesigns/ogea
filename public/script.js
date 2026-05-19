@@ -1,6 +1,7 @@
 /* ============================================ */
 /* OGEA OUTREACH PORTAL - COMPLETE JAVASCRIPT   */
 /* Darul Hidaya Dawa College                    */
+/* Now uses MongoDB via API calls               */
 /* ============================================ */
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -131,22 +132,34 @@ function initAchievementForm() {
     const successMessage = document.getElementById('submitSuccess');
     if (!form) return;
     
-    form.addEventListener('submit', function(e) {
+    form.addEventListener('submit', async function(e) {
         e.preventDefault();
         if (!validateForm()) return;
         
+        // Use FormData to send data + file to the API
         const formData = new FormData(form);
-        const achievementData = {};
-        formData.forEach((value, key) => { achievementData[key] = value; });
-        achievementData.submittedAt = new Date().toISOString();
-        achievementData.status = 'pending';
-        achievementData.pointsAwarded = 0;
         
-        saveAchievement(achievementData);
-        form.style.display = 'none';
-        if (successMessage) successMessage.style.display = 'block';
-        showAlert('Achievement submitted successfully! It will be reviewed by our team.', 'success');
-        if (successMessage) successMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        try {
+            const response = await fetch('/api/achievements', {
+                method: 'POST',
+                body: formData  // FormData handles file upload automatically
+            });
+            
+            if (!response.ok) {
+                throw new Error('Failed to submit achievement');
+            }
+            
+            const result = await response.json();
+            console.log('Achievement saved to MongoDB:', result);
+            
+            form.style.display = 'none';
+            if (successMessage) successMessage.style.display = 'block';
+            showAlert('Achievement submitted successfully! It will be reviewed by our team.', 'success');
+            if (successMessage) successMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } catch (error) {
+            console.error('Error submitting achievement:', error);
+            showAlert('Failed to submit achievement. Please try again.', 'error');
+        }
     });
 }
 
@@ -189,14 +202,6 @@ function clearErrors() {
         field.style.backgroundColor = '#f8f9fb';
     });
     document.querySelectorAll('.field-error').forEach(error => error.remove());
-}
-
-function saveAchievement(data) {
-    let achievements = [];
-    const stored = localStorage.getItem('ogea_achievements');
-    if (stored) { try { achievements = JSON.parse(stored); } catch(e) {} }
-    achievements.push(data);
-    localStorage.setItem('ogea_achievements', JSON.stringify(achievements));
 }
 
 function resetForm() {
@@ -299,58 +304,59 @@ function showAlert(message, type) {
     setTimeout(function() { if (div.parentElement) div.remove(); }, 5000);
 }
 
-/* ==================== LOAD PROGRAMS FROM ADMIN ==================== */
-/* ==================== LOAD PROGRAMS FROM ADMIN ==================== */
-function loadProgramsFromAdmin() {
+/* ==================== LOAD PROGRAMS FROM API ==================== */
+async function loadProgramsFromAdmin() {
     const programsGrid = document.getElementById('programsGrid');
     if (!programsGrid) return;
     
-    let programs = [];
     try {
-        const stored = localStorage.getItem('ogea_programs');
-        if (stored) programs = JSON.parse(stored);
-    } catch(e) { programs = []; }
-    
-    if (programs.length === 0) {
-        programsGrid.innerHTML = '<p class="empty-text" style="grid-column:1/-1;text-align:center;padding:40px;color:#94a3b8;">No programs available yet. Check back soon!</p>';
-        return;
-    }
-    
-    const sorted = programs.sort((a, b) => {
-        const order = { upcoming: 1, ongoing: 2, completed: 3 };
-        return (order[a.status] || 4) - (order[b.status] || 4);
-    });
-    
-    programsGrid.innerHTML = sorted.map(program => {
-        const statusColors = {
-            upcoming: { bg: '#dbeafe', text: '#1e40af' },
-            ongoing: { bg: '#fef3c7', text: '#92400e' },
-            completed: { bg: '#d1fae5', text: '#065f46' }
-        };
-        const sc = statusColors[program.status] || statusColors.upcoming;
-        const safeTitle = program.title.replace(/'/g, "\\'");
-        const safeImage = program.image ? program.image.replace(/'/g, "\\'") : '';
+        const response = await fetch('/api/programs');
+        const programs = await response.json();
         
-        return '<div class="program-card">' +
-            '<div class="program-image" style="' + 
-                (program.image ? 
-                    'background:url(' + safeImage + ') center/contain no-repeat;background-color:#0c1e33;' : 
-                    'background:linear-gradient(135deg,#1a3a5c,#2a5298);'
-                ) + 
-                'height:280px;min-height:280px;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:pointer;"' +
-                (program.image ? ' onclick="viewProgramPoster(\'' + safeImage + '\', \'' + safeTitle + '\')" title="Click to view full poster"' : '') +
-            '>' +
-            (!program.image ? '<span style="font-family:\'Plus Jakarta Sans\',sans-serif;font-size:80px;color:rgba(255,255,255,0.2);font-weight:800;">' + program.title.charAt(0) + '</span>' : '') +
-            (program.image ? '<div class="program-image-overlay"><i class="fas fa-search-plus"></i><span>Click to view full poster</span></div>' : '') +
-            '</div>' +
-            '<div class="program-body">' +
-            '<span class="program-status" style="display:inline-block;padding:5px 14px;border-radius:20px;font-size:12px;font-weight:600;background:' + sc.bg + ';color:' + sc.text + ';text-transform:capitalize;">' + program.status + '</span>' +
-            '<h3 class="program-title">' + program.title + '</h3>' +
-            '<p class="program-date"><i class="far fa-calendar"></i> ' + (program.date || 'TBA') + '</p>' +
-            '<p class="program-desc">' + (program.description || '') + '</p>' +
-            (program.image ? '<button class="btn-view-poster" onclick="event.stopPropagation();viewProgramPoster(\'' + safeImage + '\', \'' + safeTitle + '\')"><i class="fas fa-expand"></i> View Full Poster</button>' : '') +
-            '</div></div>';
-    }).join('');
+        if (programs.length === 0) {
+            programsGrid.innerHTML = '<p class="empty-text" style="grid-column:1/-1;text-align:center;padding:40px;color:#94a3b8;">No programs available yet. Check back soon!</p>';
+            return;
+        }
+        
+        const sorted = programs.sort((a, b) => {
+            const order = { upcoming: 1, ongoing: 2, completed: 3 };
+            return (order[a.status] || 4) - (order[b.status] || 4);
+        });
+        
+        programsGrid.innerHTML = sorted.map(program => {
+            const statusColors = {
+                upcoming: { bg: '#dbeafe', text: '#1e40af' },
+                ongoing: { bg: '#fef3c7', text: '#92400e' },
+                completed: { bg: '#d1fae5', text: '#065f46' }
+            };
+            const sc = statusColors[program.status] || statusColors.upcoming;
+            const safeTitle = program.title.replace(/'/g, "\\'");
+            const safeImage = program.image ? program.image.replace(/'/g, "\\'") : '';
+            
+            return '<div class="program-card">' +
+                '<div class="program-image" style="' + 
+                    (program.image ? 
+                        'background:url(' + safeImage + ') center/contain no-repeat;background-color:#0c1e33;' : 
+                        'background:linear-gradient(135deg,#1a3a5c,#2a5298);'
+                    ) + 
+                    'height:280px;min-height:280px;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:pointer;"' +
+                    (program.image ? ' onclick="viewProgramPoster(\'' + safeImage + '\', \'' + safeTitle + '\')" title="Click to view full poster"' : '') +
+                '>' +
+                (!program.image ? '<span style="font-family:\'Plus Jakarta Sans\',sans-serif;font-size:80px;color:rgba(255,255,255,0.2);font-weight:800;">' + program.title.charAt(0) + '</span>' : '') +
+                (program.image ? '<div class="program-image-overlay"><i class="fas fa-search-plus"></i><span>Click to view full poster</span></div>' : '') +
+                '</div>' +
+                '<div class="program-body">' +
+                '<span class="program-status" style="display:inline-block;padding:5px 14px;border-radius:20px;font-size:12px;font-weight:600;background:' + sc.bg + ';color:' + sc.text + ';text-transform:capitalize;">' + program.status + '</span>' +
+                '<h3 class="program-title">' + program.title + '</h3>' +
+                '<p class="program-date"><i class="far fa-calendar"></i> ' + (program.date || 'TBA') + '</p>' +
+                '<p class="program-desc">' + (program.description || '') + '</p>' +
+                (program.image ? '<button class="btn-view-poster" onclick="event.stopPropagation();viewProgramPoster(\'' + safeImage + '\', \'' + safeTitle + '\')"><i class="fas fa-expand"></i> View Full Poster</button>' : '') +
+                '</div></div>';
+        }).join('');
+    } catch (error) {
+        console.error('Error loading programs:', error);
+        programsGrid.innerHTML = '<p class="empty-text" style="grid-column:1/-1;text-align:center;padding:40px;color:#94a3b8;">No programs available yet. Check back soon!</p>';
+    }
 }
 
 /* ==================== VIEW PROGRAM POSTER (Full Screen) ==================== */
@@ -452,59 +458,51 @@ document.addEventListener('keydown', function(e) {
         }
     }
 });
-/* ==================== LOAD POSTERS FROM ADMIN ==================== */
-function loadPublicPosters() {
-    // Load 200 Mission posters
-    let mission200Posters = [];
+/* ==================== LOAD POSTERS FROM API ==================== */
+async function loadPublicPosters() {
     try {
-        const stored200 = localStorage.getItem('ogea_posters_mission200');
-        if (stored200) mission200Posters = JSON.parse(stored200);
-    } catch(e) { mission200Posters = []; }
-    
-    // Load 1 Student 1 Mission posters
-    let mission1Posters = [];
-    try {
-        const stored1 = localStorage.getItem('ogea_posters_mission1');
-        if (stored1) mission1Posters = JSON.parse(stored1);
-    } catch(e) { mission1Posters = []; }
-    
-    // Update 200 Mission posters
-    const container200 = document.getElementById('publicMission200Posters');
-    if (container200) {
-        if (mission200Posters.length === 0) {
-            container200.innerHTML = '<div class="winners-empty-box"><p>No posters in "200 Mission" yet.</p></div>';
-        } else {
-            container200.innerHTML = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;">' +
-                mission200Posters.map(function(poster) {
-                    return '<div class="public-poster-card" onclick="openPublicLightbox(\'' + poster.src + '\')" style="border-radius:10px;overflow:hidden;aspect-ratio:3/4;border:2px solid #e2e8f0;cursor:pointer;transition:all 0.3s;" onmouseover="this.style.transform=\'scale(1.05)\';this.style.boxShadow=\'0 4px 15px rgba(0,0,0,0.2)\'" onmouseout="this.style.transform=\'scale(1)\';this.style.boxShadow=\'none\'">' +
-                        '<img src="' + poster.src + '" alt="' + (poster.name || 'Poster') + '" style="width:100%;height:100%;object-fit:cover;" loading="lazy">' +
+        // Load 200 Mission posters from API
+        const res200 = await fetch('/api/posters/mission200');
+        const mission200Posters = await res200.json();
+        
+        // Load 1 Student 1 Mission posters from API
+        const res1 = await fetch('/api/posters/mission1');
+        const mission1Posters = await res1.json();
+        
+        // Update 200 Mission posters
+        const container200 = document.getElementById('publicMission200Posters');
+        if (container200) {
+            if (mission200Posters.length === 0) {
+                container200.innerHTML = '<div class="winners-empty-box"><p>No posters in "200 Mission" yet.</p></div>';
+            } else {
+                container200.innerHTML = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;">' +
+                    mission200Posters.map(function(poster) {
+                        return '<div class="public-poster-card" onclick="openPublicLightbox(\'' + poster.src + '\')" style="border-radius:10px;overflow:hidden;aspect-ratio:3/4;border:2px solid #e2e8f0;cursor:pointer;transition:all 0.3s;" onmouseover="this.style.transform=\'scale(1.05)\';this.style.boxShadow=\'0 4px 15px rgba(0,0,0,0.2)\'" onmouseout="this.style.transform=\'scale(1)\';this.style.boxShadow=\'none\'">' +
+                                '<img src="' + poster.src + '" alt="' + (poster.name || 'Poster') + '" style="width:100%;height:100%;object-fit:cover;" loading="lazy">' +
+                            '</div>';
+                    }).join('') +
                     '</div>';
-                }).join('') +
-                '</div>';
+            }
         }
-    }
-    
-    // Update 1 Student 1 Mission posters
-    const container1 = document.getElementById('publicMission1Posters');
-    if (container1) {
-        if (mission1Posters.length === 0) {
-            container1.innerHTML = '<div class="winners-empty-box"><p>No posters in "1 Student 1 Mission" yet.</p></div>';
-        } else {
-            container1.innerHTML = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;">' +
-                mission1Posters.map(function(poster) {
-                    return '<div class="public-poster-card" onclick="openPublicLightbox(\'' + poster.src + '\')" style="border-radius:10px;overflow:hidden;aspect-ratio:3/4;border:2px solid #e2e8f0;cursor:pointer;transition:all 0.3s;" onmouseover="this.style.transform=\'scale(1.05)\';this.style.boxShadow=\'0 4px 15px rgba(0,0,0,0.2)\'" onmouseout="this.style.transform=\'scale(1)\';this.style.boxShadow=\'none\'">' +
-                        '<img src="' + poster.src + '" alt="' + (poster.name || 'Poster') + '" style="width:100%;height:100%;object-fit:cover;" loading="lazy">' +
+        
+        // Update 1 Student 1 Mission posters
+        const container1 = document.getElementById('publicMission1Posters');
+        if (container1) {
+            if (mission1Posters.length === 0) {
+                container1.innerHTML = '<div class="winners-empty-box"><p>No posters in "1 Student 1 Mission" yet.</p></div>';
+            } else {
+                container1.innerHTML = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;">' +
+                    mission1Posters.map(function(poster) {
+                        return '<div class="public-poster-card" onclick="openPublicLightbox(\'' + poster.src + '\')" style="border-radius:10px;overflow:hidden;aspect-ratio:3/4;border:2px solid #e2e8f0;cursor:pointer;transition:all 0.3s;" onmouseover="this.style.transform=\'scale(1.05)\';this.style.boxShadow=\'0 4px 15px rgba(0,0,0,0.2)\'" onmouseout="this.style.transform=\'scale(1)\';this.style.boxShadow=\'none\'">' +
+                                '<img src="' + poster.src + '" alt="' + (poster.name || 'Poster') + '" style="width:100%;height:100%;object-fit:cover;" loading="lazy">' +
+                            '</div>';
+                    }).join('') +
                     '</div>';
-                }).join('') +
-                '</div>';
+            }
         }
-    }
-    
-    // If no posters at all, keep original state
-    if (mission200Posters.length === 0 && mission1Posters.length === 0) {
-        // Already showing empty state, do nothing
-        return;
+    } catch (error) {
+        console.error('Error loading posters:', error);
     }
 }
 
-console.log('🚀 OGEA Outreach Portal Ready!');
+console.log('🚀 OGEA Outreach Portal Ready! (MongoDB Edition)');
