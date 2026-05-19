@@ -16,14 +16,18 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // Session management (serverless ready with MongoDB)
+const sessionStore = process.env.MONGODB_URI 
+    ? MongoStore.create({
+        mongoUrl: process.env.MONGODB_URI,
+        collectionName: 'sessions'
+    })
+    : undefined; // Fallback to MemoryStore if env var is missing
+
 app.use(session({
     secret: process.env.SESSION_SECRET || 'ogea_secret_2026',
     resave: false,
     saveUninitialized: false,
-    store: MongoStore.create({
-        mongoUrl: process.env.MONGODB_URI,
-        collectionName: 'sessions'
-    }),
+    store: sessionStore,
     cookie: {
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
         httpOnly: true
