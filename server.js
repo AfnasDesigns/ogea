@@ -5,6 +5,8 @@ const session = require('express-session');
 const cors = require('cors');
 const { connectDB } = require('./config/db');
 
+const { MongoStore } = require('connect-mongo');
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -13,11 +15,15 @@ app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
-// Session management (replaces localStorage session)
+// Session management (serverless ready with MongoDB)
 app.use(session({
     secret: process.env.SESSION_SECRET || 'ogea_secret_2026',
     resave: false,
     saveUninitialized: false,
+    store: MongoStore.create({
+        mongoUrl: process.env.MONGODB_URI,
+        collectionName: 'sessions'
+    }),
     cookie: {
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
         httpOnly: true
@@ -28,46 +34,53 @@ app.use(session({
 // Serve the frontend files (HTML, CSS, JS)
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Serve uploaded files
+// Serve uploaded files (fallback for local dev if Cloudinary isn't configured)
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // ==================== API ROUTES ====================
-app.use('/api/achievements', require('./routes/achievements'));
-app.use('/api/programs', require('./routes/programs'));
-app.use('/api/posters', require('./routes/posters'));
-app.use('/api/publications', require('./routes/publications'));
-app.use('/api/users', require('./routes/users'));
-app.use('/api/config', require('./routes/config'));
-app.use('/api/auth', require('./routes/auth'));
+// In Netlify functions, the base path is usually /.netlify/functions/api
+// But we want our routes to work seamlessly. We can mount them under /api
+const apiRouter = express.Router();
 
-// ==================== HEALTH CHECK ====================
-app.get('/api/health', (req, res) => {
+apiRouter.use('/achievements', require('./routes/achievements'));
+apiRouter.use('/programs', require('./routes/programs'));
+apiRouter.use('/posters', require('./routes/posters'));
+apiRouter.use('/publications', require('./routes/publications'));
+apiRouter.use('/users', require('./routes/users'));
+apiRouter.use('/config', require('./routes/config'));
+apiRouter.use('/auth', require('./routes/auth'));
+apiRouter.get('/health', (req, res) => {
     res.json({ status: 'ok', message: 'OGEA Portal API is running', timestamp: new Date().toISOString() });
 });
 
-// ==================== START SERVER ====================
-async function startServer() {
-    try {
-        // Connect to MongoDB first
-        await connectDB();
+// Mount router at /api for local dev
+app.use('/api', apiRouter);
+// Mount router at /.netlify/functions/api for Netlify
+app.use('/.netlify/functions/api', apiRouter);
 
-        // Then start Express server
-        app.listen(PORT, () => {
-            console.log('');
-            console.log('🎓 =============================================');
-            console.log('🎓  OGEA OUTREACH PORTAL - SERVER RUNNING');
-            console.log('🎓  Darul Hidaya Dawa College');
-            console.log('🎓 =============================================');
-            console.log(`🌐 Portal:  http://localhost:${PORT}`);
-            console.log(`🔐 Admin:   http://localhost:${PORT}/admin-login.html`);
-            console.log(`📡 API:     http://localhost:${PORT}/api/health`);
-            console.log('🎓 =============================================');
-            console.log('');
-        });
-    } catch (error) {
-        console.error('❌ Failed to start server:', error);
-        process.exit(1);
+module.exports = app; // Export for serverless-http
+
+// ==================== START SERVER (LOCAL ONLY) ====================
+if (require.main === module) {
+    async function startServer() {
+        try {
+            await connectDB();
+            app.listen(PORT, () => {
+                console.log('');
+                console.log('🎓 =============================================');
+                console.log('🎓  OGEA OUTREACH PORTAL - SERVER RUNNING');
+                console.log('🎓  Darul Hidaya Dawa College');
+                console.log('🎓 =============================================');
+                console.log(`🌐 Portal:  http://localhost:${PORT}`);
+                console.log(`🔐 Admin:   http://localhost:${PORT}/admin-login.html`);
+                console.log(`📡 API:     http://localhost:${PORT}/api/health`);
+                console.log('🎓 =============================================');
+                console.log('');
+            });
+        } catch (error) {
+            console.error('❌ Failed to start server:', error);
+            process.exit(1);
+        }
     }
+    startServer();
 }
-
-startServer();
