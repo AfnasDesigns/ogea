@@ -26,41 +26,29 @@ function initAdmin() {
 }
 
 /* ==================== DATA MANAGEMENT ==================== */
-function loadData() {
-    const storedA = localStorage.getItem('ogea_achievements');
-    if (storedA) achievements = JSON.parse(storedA);
-    
-    const storedP = localStorage.getItem('ogea_programs');
-    if (storedP) programs = JSON.parse(storedP);
-    else {
-        programs = [
-            { id: 1, title: 'USWATHUNABI', description: 'A blessed program celebrating the life of Prophet Muhammad ﷺ', status: 'upcoming', date: 'TBA', image: '' },
-            { id: 2, title: 'QUIZ COMPETITION', description: 'Test your knowledge in this exciting quiz challenge', status: 'upcoming', date: 'TBA', image: '' },
-            { id: 3, title: 'QURAN TALENT SHOW', description: 'Showcase your Quranic recitation talents', status: 'upcoming', date: 'TBA', image: '' },
-            { id: 4, title: 'VIDEO MAKING CONTEST', description: 'Create impactful videos on Islamic themes', status: 'upcoming', date: 'TBA', image: '' },
-            { id: 5, title: 'KAVALI', description: 'Traditional poetic expression competition', status: 'upcoming', date: 'TBA', image: '' },
-            { id: 6, title: 'KAVITHA RAJANA', description: 'Poetry recitation and creative writing', status: 'upcoming', date: 'TBA', image: '' },
-            { id: 7, title: 'KATHA MALSARAM 2026', description: 'Storytelling competition', status: 'upcoming', date: 'TBA', image: '' },
-            { id: 8, title: 'INDIA HOLY QURAN AWARD 2026', description: 'National level Quran competition', status: 'upcoming', date: 'TBA', image: '' }
-        ];
-        localStorage.setItem('ogea_programs', JSON.stringify(programs));
-    }
-    
-    const storedPub = localStorage.getItem('ogea_publications');
-    if (storedPub) publications = JSON.parse(storedPub);
-    
-    const storedU = localStorage.getItem('ogea_users');
-    if (storedU) users = JSON.parse(storedU);
-    else {
-        users = [{ id: 1, name: 'Admin User', admission: 'ADMIN001', class: 'N/A', email: 'admin@ogea.edu', role: 'admin', password: 'admin123', credits: 0, badge: 'none' }];
-        localStorage.setItem('ogea_users', JSON.stringify(users));
+async function loadData() {
+    try {
+        const [achRes, progRes, pubRes, userRes] = await Promise.all([
+            fetch('/api/achievements'),
+            fetch('/api/programs'),
+            fetch('/api/publications'),
+            fetch('/api/users')
+        ]);
+        
+        achievements = await achRes.json();
+        programs = await progRes.json();
+        publications = await pubRes.json();
+        users = await userRes.json();
+    } catch (error) {
+        console.error('Error loading data:', error);
+        showAlert('Failed to load data from server', 'error');
     }
 }
 
-function saveAchievements() { localStorage.setItem('ogea_achievements', JSON.stringify(achievements)); updatePendingCount(); }
-function savePrograms() { localStorage.setItem('ogea_programs', JSON.stringify(programs)); }
-function savePublications() { localStorage.setItem('ogea_publications', JSON.stringify(publications)); }
-function saveUsers() { localStorage.setItem('ogea_users', JSON.stringify(users)); }
+async function saveAchievements() { updatePendingCount(); } // Now handled via individual API calls
+async function savePrograms() {} // Now handled via individual API calls
+async function savePublications() {} // Now handled via individual API calls
+async function saveUsers() {} // Now handled via individual API calls
 
 /* ==================== NAVIGATION ==================== */
 function navigateTo(page) {
@@ -197,41 +185,60 @@ function quickApprove(index) {
     viewAchievement(index);
 }
 
-function updateAchievementStatus(status) {
+async function updateAchievementStatus(status) {
     if (currentAchievementId === null) return;
     const a = achievements[currentAchievementId];
-    // MANUAL POINTS - Admin enters points manually
     const points = parseInt(document.getElementById('awardPoints').value) || 0;
-    a.status = status;
-    a.pointsAwarded = status === 'approved' ? points : 0;
-    a.reviewedAt = new Date().toISOString();
-    saveAchievements();
-    closeModal('achievementModal');
-    loadAchievementsTable();
-    loadDashboard();
-    showAlert(`Achievement ${status}! Points awarded: ${a.pointsAwarded}`, status === 'approved' ? 'success' : 'warning');
-}
-
-function deleteAchievement(index) {
-    if (confirm('Are you sure you want to delete this achievement?')) {
-        achievements.splice(index, 1);
-        saveAchievements();
+    
+    try {
+        await fetch(`/api/achievements/${a._id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status, pointsAwarded: status === 'approved' ? points : 0 })
+        });
+        
+        a.status = status;
+        a.pointsAwarded = status === 'approved' ? points : 0;
+        
+        closeModal('achievementModal');
         loadAchievementsTable();
         loadDashboard();
-        showAlert('Achievement deleted!', 'success');
+        updatePendingCount();
+        showAlert(`Achievement ${status}! Points awarded: ${a.pointsAwarded}`, status === 'approved' ? 'success' : 'warning');
+    } catch (error) {
+        console.error('Error updating achievement:', error);
+        showAlert('Failed to update achievement', 'error');
     }
 }
 
-/* ==================== PROGRAMS (With Image Upload) ==================== */
+async function deleteAchievement(index) {
+    if (confirm('Are you sure you want to delete this achievement?')) {
+        const a = achievements[index];
+        try {
+            await fetch(`/api/achievements/${a._id}`, { method: 'DELETE' });
+            achievements.splice(index, 1);
+            loadAchievementsTable();
+            loadDashboard();
+            updatePendingCount();
+            showAlert('Achievement deleted!', 'success');
+        } catch (error) {
+            console.error('Error deleting achievement:', error);
+            showAlert('Failed to delete achievement', 'error');
+        }
+    }
+}
+
+let programImageFile = null;
+
 function initProgramImageUpload() {
     const imageInput = document.getElementById('programImage');
     if (imageInput) {
         imageInput.addEventListener('change', function() {
             const file = this.files[0];
             if (file) {
+                programImageFile = file; // Store the actual file object
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    currentProgramImage = e.target.result;
                     const preview = document.getElementById('programImagePreview');
                     const previewImg = document.getElementById('programImagePreviewImg');
                     const nameDisplay = document.getElementById('programImageName');
@@ -245,6 +252,7 @@ function initProgramImageUpload() {
     }
 }
 
+// ... skipped loadProgramsList ...
 function loadProgramsList() {
     const list = document.getElementById('programsList');
     if (programs.length === 0) {
@@ -273,7 +281,7 @@ function loadProgramsList() {
 function openProgramForm(index = null) {
     const form = document.getElementById('programForm');
     if (form) form.reset();
-    currentProgramImage = null;
+    programImageFile = null;
     document.getElementById('programImagePreview').style.display = 'none';
     document.getElementById('programImageName').textContent = 'No image chosen';
     
@@ -286,7 +294,6 @@ function openProgramForm(index = null) {
         document.getElementById('programStatus').value = p.status;
         document.getElementById('programDate').value = p.date !== 'TBA' ? p.date : '';
         if (p.image) {
-            currentProgramImage = p.image;
             document.getElementById('programImagePreview').style.display = 'block';
             document.getElementById('programImagePreviewImg').src = p.image;
             document.getElementById('programImageName').textContent = 'Current image';
@@ -300,42 +307,65 @@ function openProgramForm(index = null) {
 
 function editProgram(index) { openProgramForm(index); }
 
-function saveProgram() {
+async function saveProgram() {
     const id = document.getElementById('programId').value;
-    const data = {
-        id: id !== '' ? programs[parseInt(id)].id : Date.now(),
-        title: document.getElementById('programTitle').value,
-        description: document.getElementById('programDescription').value,
-        status: document.getElementById('programStatus').value,
-        date: document.getElementById('programDate').value || 'TBA',
-        image: currentProgramImage || (id !== '' ? programs[parseInt(id)].image : '')
-    };
-    if (!data.title) { showAlert('Please enter a program title', 'error'); return; }
-    if (id !== '') {
-        programs[parseInt(id)] = { ...programs[parseInt(id)], ...data };
-    } else {
-        programs.push(data);
+    const title = document.getElementById('programTitle').value;
+    const description = document.getElementById('programDescription').value;
+    const status = document.getElementById('programStatus').value;
+    const date = document.getElementById('programDate').value || 'TBA';
+    
+    if (!title) { showAlert('Please enter a program title', 'error'); return; }
+    
+    const formData = new FormData();
+    formData.append('title', title);
+    formData.append('description', description);
+    formData.append('status', status);
+    formData.append('date', date);
+    if (programImageFile) {
+        formData.append('image', programImageFile);
     }
-    savePrograms();
-    closeModal('programModal');
-    loadProgramsList();
-    showAlert('Program saved successfully!', 'success');
+    
+    try {
+        if (id !== '') {
+            // Edit existing
+            const p = programs[parseInt(id)];
+            const res = await fetch(`/api/programs/${p._id}`, { method: 'PUT', body: formData });
+            programs[parseInt(id)] = await res.json();
+        } else {
+            // Add new
+            const res = await fetch('/api/programs', { method: 'POST', body: formData });
+            programs.push(await res.json());
+        }
+        
+        closeModal('programModal');
+        loadProgramsList();
+        showAlert('Program saved successfully!', 'success');
+    } catch (error) {
+        console.error('Error saving program:', error);
+        showAlert('Failed to save program', 'error');
+    }
 }
 
-function deleteProgram(index) {
+async function deleteProgram(index) {
     if (confirm('Are you sure you want to delete this program?')) {
-        programs.splice(index, 1);
-        savePrograms();
-        loadProgramsList();
-        showAlert('Program deleted!', 'success');
+        const p = programs[index];
+        try {
+            await fetch(`/api/programs/${p._id}`, { method: 'DELETE' });
+            programs.splice(index, 1);
+            loadProgramsList();
+            showAlert('Program deleted!', 'success');
+        } catch (error) {
+            console.error('Error deleting program:', error);
+            showAlert('Failed to delete program', 'error');
+        }
     }
 }
 
 /* ==================== POSTERS UPLOAD ==================== */
-/* ==================== POSTERS MANAGEMENT (200+ Support) ==================== */
-const POSTERS_PER_PAGE = 50; // Show 50 posters at a time, load more for 200+
+const POSTERS_PER_PAGE = 50;
 let posterPages = { mission200: 0, mission1: 0 };
 let selectedPosters = { mission200: [], mission1: [] };
+let allPosters = { mission200: [], mission1: [] };
 
 function initPosterUploads() {
     setupBulkPosterUpload('mission200File', 'mission200Posters', 'mission200');
@@ -347,7 +377,7 @@ function setupBulkPosterUpload(inputId, containerId, storageKey) {
     const input = document.getElementById(inputId);
     if (!input) return;
     
-    input.addEventListener('change', function() {
+    input.addEventListener('change', async function() {
         const files = this.files;
         if (!files.length) return;
         
@@ -356,106 +386,92 @@ function setupBulkPosterUpload(inputId, containerId, storageKey) {
         const progressText = document.getElementById(`${storageKey}ProgressText`);
         
         if (progressDiv) progressDiv.style.display = 'block';
+        if (progressFill) progressFill.style.width = '50%';
+        if (progressText) progressText.textContent = `Uploading ${files.length} files... Please wait.`;
         
-        let posters = JSON.parse(localStorage.getItem(`ogea_posters_${storageKey}`) || '[]');
-        let loaded = 0;
-        const total = files.length;
-        
-        // Process files in chunks to handle 200+ files
-        function processChunk(startIndex, chunkSize) {
-            const endIndex = Math.min(startIndex + chunkSize, total);
-            let chunkLoaded = 0;
-            
-            for (let i = startIndex; i < endIndex; i++) {
-                const file = files[i];
-                const reader = new FileReader();
-                
-                reader.onload = function(e) {
-                    posters.push({
-                        id: Date.now() + '_' + Math.random().toString(36).substr(2, 9),
-                        src: e.target.result,
-                        name: file.name,
-                        uploadedAt: new Date().toISOString()
-                    });
-                    
-                    loaded++;
-                    chunkLoaded++;
-                    
-                    // Update progress
-                    const progress = Math.round((loaded / total) * 100);
-                    if (progressFill) progressFill.style.width = progress + '%';
-                    if (progressText) progressText.textContent = `Uploading... ${loaded}/${total} (${progress}%)`;
-                    
-                    // When chunk is done, process next chunk
-                    if (chunkLoaded === (endIndex - startIndex) && loaded < total) {
-                        setTimeout(() => processChunk(loaded, 10), 50);
-                    }
-                    
-                    // When all done
-                    if (loaded === total) {
-                        localStorage.setItem(`ogea_posters_${storageKey}`, JSON.stringify(posters));
-                        posterPages[storageKey] = 0;
-                        displayPostersPaginated(containerId, storageKey);
-                        updatePosterCount(storageKey);
-                        
-                        if (progressDiv) {
-                            setTimeout(() => {
-                                progressDiv.style.display = 'none';
-                                if (progressFill) progressFill.style.width = '0%';
-                            }, 1000);
-                        }
-                        
-                        showAlert(`✅ ${total} posters uploaded successfully! Total: ${posters.length}`, 'success');
-                    }
-                };
-                
-                reader.onerror = function() {
-                    loaded++;
-                    chunkLoaded++;
-                };
-                
-                reader.readAsDataURL(file);
-            }
+        const formData = new FormData();
+        for (let i = 0; i < files.length; i++) {
+            formData.append('files', files[i]);
         }
         
-        // Start processing in chunks of 10 to handle 200+ files
-        processChunk(0, 10);
+        try {
+            const res = await fetch(`/api/posters/${storageKey}`, { method: 'POST', body: formData });
+            const data = await res.json();
+            
+            if (res.ok) {
+                if (progressFill) progressFill.style.width = '100%';
+                if (progressText) progressText.textContent = `Upload complete!`;
+                
+                await fetchPosters(storageKey);
+                posterPages[storageKey] = 0;
+                displayPostersPaginated(containerId, storageKey);
+                
+                setTimeout(() => {
+                    if (progressDiv) progressDiv.style.display = 'none';
+                    if (progressFill) progressFill.style.width = '0%';
+                }, 2000);
+                
+                showAlert(`✅ ${files.length} posters uploaded successfully!`, 'success');
+            } else {
+                throw new Error(data.error || 'Upload failed');
+            }
+        } catch (error) {
+            console.error('Upload error:', error);
+            if (progressText) progressText.textContent = `Upload failed: ${error.message}`;
+            showAlert('Failed to upload posters', 'error');
+        }
         
-        // Reset input
         this.value = '';
     });
+}
+
+async function fetchPosters(storageKey) {
+    try {
+        const res = await fetch(`/api/posters/${storageKey}`);
+        allPosters[storageKey] = await res.json();
+    } catch (error) {
+        console.error('Error fetching posters:', error);
+    }
+}
+
+async function loadPosters() {
+    await fetchPosters('mission200');
+    await fetchPosters('mission1');
+    displayPostersPaginated('mission200Posters', 'mission200');
+    displayPostersPaginated('mission1Posters', 'mission1');
+    updatePosterCount('mission200');
+    updatePosterCount('mission1');
 }
 
 function displayPostersPaginated(containerId, storageKey) {
     const container = document.getElementById(containerId);
     if (!container) return;
     
-    const posters = JSON.parse(localStorage.getItem(`ogea_posters_${storageKey}`) || '[]');
+    const posters = allPosters[storageKey] || [];
     const page = posterPages[storageKey] || 0;
     const start = 0;
     const end = (page + 1) * POSTERS_PER_PAGE;
     const visiblePosters = posters.slice(start, end);
     
     if (posters.length === 0) {
-        container.innerHTML = '<p class="empty-text" style="grid-column:1/-1;">No posters uploaded yet. Upload 200+ posters!</p>';
+        container.innerHTML = '<p class="empty-text" style="grid-column:1/-1;">No posters uploaded yet.</p>';
         document.getElementById(`${storageKey}LoadMore`).style.display = 'none';
         document.getElementById(`${storageKey}BulkActions`).style.display = 'none';
         return;
     }
     
     container.innerHTML = visiblePosters.map((p, i) => `
-        <div class="poster-item ${selectedPosters[storageKey].includes(p.id) ? 'selected' : ''}" 
-             onclick="togglePosterSelection('${storageKey}', '${p.id}', event)" 
+        <div class="poster-item ${selectedPosters[storageKey].includes(p._id) ? 'selected' : ''}" 
+             onclick="togglePosterSelection('${storageKey}', '${p._id}', event)" 
              ondblclick="openPosterLightbox('${storageKey}', ${i})">
-            <div class="poster-checkbox" onclick="event.stopPropagation(); togglePosterSelection('${storageKey}', '${p.id}', event)">
-                ${selectedPosters[storageKey].includes(p.id) ? '✓' : ''}
+            <div class="poster-checkbox" onclick="event.stopPropagation(); togglePosterSelection('${storageKey}', '${p._id}', event)">
+                ${selectedPosters[storageKey].includes(p._id) ? '✓' : ''}
             </div>
             <img src="${p.src}" alt="${p.name}" loading="lazy">
-            <button class="delete-poster" onclick="event.stopPropagation(); deleteSinglePoster('${storageKey}', '${p.id}')" title="Delete">×</button>
+            <button class="delete-poster" onclick="event.stopPropagation(); deleteSinglePoster('${storageKey}', '${p._id}')" title="Delete">×</button>
         </div>
     `).join('');
     
-    // Show/hide load more
     const loadMoreDiv = document.getElementById(`${storageKey}LoadMore`);
     const bulkActionsDiv = document.getElementById(`${storageKey}BulkActions`);
     
@@ -469,7 +485,6 @@ function displayPostersPaginated(containerId, storageKey) {
         if (loadMoreDiv) loadMoreDiv.style.display = 'none';
     }
     
-    // Show bulk actions if posters exist
     if (bulkActionsDiv) {
         bulkActionsDiv.style.display = posters.length > 0 ? 'flex' : 'none';
     }
@@ -485,37 +500,28 @@ function loadMorePosters(storageKey) {
 
 function togglePosterSelection(storageKey, posterId, event) {
     if (!selectedPosters[storageKey]) selectedPosters[storageKey] = [];
-    
     const index = selectedPosters[storageKey].indexOf(posterId);
-    if (index > -1) {
-        selectedPosters[storageKey].splice(index, 1);
-    } else {
-        selectedPosters[storageKey].push(posterId);
-    }
+    if (index > -1) selectedPosters[storageKey].splice(index, 1);
+    else selectedPosters[storageKey].push(posterId);
     
-    // Refresh display
     const containerId = storageKey === 'mission200' ? 'mission200Posters' : 'mission1Posters';
     displayPostersPaginated(containerId, storageKey);
-    
-    // Update select all button text
     updateBulkActionButtons(storageKey);
 }
 
 function selectAllPosters(storageKey) {
-    const posters = JSON.parse(localStorage.getItem(`ogea_posters_${storageKey}`) || '[]');
+    const posters = allPosters[storageKey] || [];
     if (selectedPosters[storageKey].length === posters.length) {
-        // Deselect all
         selectedPosters[storageKey] = [];
     } else {
-        // Select all
-        selectedPosters[storageKey] = posters.map(p => p.id);
+        selectedPosters[storageKey] = posters.map(p => p._id);
     }
     const containerId = storageKey === 'mission200' ? 'mission200Posters' : 'mission1Posters';
     displayPostersPaginated(containerId, storageKey);
     updateBulkActionButtons(storageKey);
 }
 
-function bulkDeletePosters(storageKey) {
+async function bulkDeletePosters(storageKey) {
     if (!selectedPosters[storageKey] || selectedPosters[storageKey].length === 0) {
         showAlert('No posters selected', 'warning');
         return;
@@ -523,38 +529,50 @@ function bulkDeletePosters(storageKey) {
     
     const count = selectedPosters[storageKey].length;
     if (confirm(`Delete ${count} selected poster(s)? This cannot be undone.`)) {
-        let posters = JSON.parse(localStorage.getItem(`ogea_posters_${storageKey}`) || '[]');
-        posters = posters.filter(p => !selectedPosters[storageKey].includes(p.id));
-        localStorage.setItem(`ogea_posters_${storageKey}`, JSON.stringify(posters));
-        selectedPosters[storageKey] = [];
-        posterPages[storageKey] = 0;
-        
-        const containerId = storageKey === 'mission200' ? 'mission200Posters' : 'mission1Posters';
-        displayPostersPaginated(containerId, storageKey);
-        showAlert(`${count} posters deleted! Remaining: ${posters.length}`, 'warning');
+        try {
+            await fetch('/api/posters/bulk-delete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ids: selectedPosters[storageKey] })
+            });
+            
+            await fetchPosters(storageKey);
+            selectedPosters[storageKey] = [];
+            posterPages[storageKey] = 0;
+            
+            const containerId = storageKey === 'mission200' ? 'mission200Posters' : 'mission1Posters';
+            displayPostersPaginated(containerId, storageKey);
+            showAlert(`${count} posters deleted!`, 'warning');
+        } catch (error) {
+            console.error('Error deleting posters:', error);
+            showAlert('Failed to delete posters', 'error');
+        }
     }
 }
 
-function deleteSinglePoster(storageKey, posterId) {
+async function deleteSinglePoster(storageKey, posterId) {
     if (confirm('Delete this poster?')) {
-        let posters = JSON.parse(localStorage.getItem(`ogea_posters_${storageKey}`) || '[]');
-        posters = posters.filter(p => p.id !== posterId);
-        localStorage.setItem(`ogea_posters_${storageKey}`, JSON.stringify(posters));
-        
-        // Remove from selection
-        if (selectedPosters[storageKey]) {
-            selectedPosters[storageKey] = selectedPosters[storageKey].filter(id => id !== posterId);
+        try {
+            await fetch(`/api/posters/${posterId}`, { method: 'DELETE' });
+            
+            if (selectedPosters[storageKey]) {
+                selectedPosters[storageKey] = selectedPosters[storageKey].filter(id => id !== posterId);
+            }
+            
+            await fetchPosters(storageKey);
+            const containerId = storageKey === 'mission200' ? 'mission200Posters' : 'mission1Posters';
+            displayPostersPaginated(containerId, storageKey);
+            showAlert('Poster deleted', 'warning');
+        } catch (error) {
+            console.error('Error deleting poster:', error);
+            showAlert('Failed to delete poster', 'error');
         }
-        
-        const containerId = storageKey === 'mission200' ? 'mission200Posters' : 'mission1Posters';
-        displayPostersPaginated(containerId, storageKey);
-        showAlert('Poster deleted', 'warning');
     }
 }
 
 function updateBulkActionButtons(storageKey) {
     const btn = document.querySelector(`#${storageKey}BulkActions .btn-secondary`);
-    const posters = JSON.parse(localStorage.getItem(`ogea_posters_${storageKey}`) || '[]');
+    const posters = allPosters[storageKey] || [];
     if (btn) {
         if (selectedPosters[storageKey].length === posters.length && posters.length > 0) {
             btn.innerHTML = '<i class="fas fa-square"></i> Deselect All';
@@ -565,23 +583,19 @@ function updateBulkActionButtons(storageKey) {
 }
 
 function updatePosterCount(storageKey) {
-    const posters = JSON.parse(localStorage.getItem(`ogea_posters_${storageKey}`) || '[]');
+    const posters = allPosters[storageKey] || [];
     const countBadge = document.getElementById(`${storageKey}Count`);
-    if (countBadge) {
-        countBadge.textContent = `${posters.length} Posters`;
-    }
+    if (countBadge) countBadge.textContent = `${posters.length} Posters`;
 }
 
 function sortPosters(storageKey, order) {
-    let posters = JSON.parse(localStorage.getItem(`ogea_posters_${storageKey}`) || '[]');
-    
+    const posters = allPosters[storageKey] || [];
     if (order === 'newest') {
         posters.sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt));
     } else {
         posters.sort((a, b) => new Date(a.uploadedAt) - new Date(b.uploadedAt));
     }
     
-    localStorage.setItem(`ogea_posters_${storageKey}`, JSON.stringify(posters));
     posterPages[storageKey] = 0;
     const containerId = storageKey === 'mission200' ? 'mission200Posters' : 'mission1Posters';
     displayPostersPaginated(containerId, storageKey);
@@ -608,10 +622,9 @@ function initPosterSearch() {
 }
 
 function openPosterLightbox(storageKey, index) {
-    const posters = JSON.parse(localStorage.getItem(`ogea_posters_${storageKey}`) || '[]');
+    const posters = allPosters[storageKey] || [];
     if (posters.length === 0) return;
     
-    // Create lightbox
     let lightbox = document.getElementById('posterLightbox');
     if (!lightbox) {
         lightbox = document.createElement('div');
@@ -650,7 +663,7 @@ function navigateLightbox(direction) {
     if (!lightbox) return;
     
     const storageKey = lightbox.currentStorageKey;
-    const posters = JSON.parse(localStorage.getItem(`ogea_posters_${storageKey}`) || '[]');
+    const posters = allPosters[storageKey] || [];
     
     lightbox.currentIndex = (lightbox.currentIndex + direction + posters.length) % posters.length;
     
@@ -720,10 +733,9 @@ function openPublicationForm(index = null) {
     openModal('publicationModal');
 }
 
-function savePublication() {
+async function savePublication() {
     const id = document.getElementById('publicationId').value;
     const data = {
-        id: id ? publications[id].id : Date.now(),
         name: document.getElementById('pubName').value,
         category: document.getElementById('pubCategory').value,
         language: document.getElementById('pubLanguage').value,
@@ -731,16 +743,47 @@ function savePublication() {
         email: document.getElementById('pubEmail').value
     };
     if (!data.name) { showAlert('Name required', 'error'); return; }
-    if (id) publications[id] = { ...publications[id], ...data };
-    else publications.push(data);
-    savePublications();
-    closeModal('publicationModal');
-    loadPublicationsTable();
-    showAlert('Saved!', 'success');
+    
+    try {
+        if (id !== '') {
+            const p = publications[parseInt(id)];
+            await fetch(`/api/publications/${p._id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            publications[parseInt(id)] = { ...p, ...data };
+        } else {
+            const res = await fetch('/api/publications', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            publications.push(await res.json());
+        }
+        
+        closeModal('publicationModal');
+        loadPublicationsTable();
+        showAlert('Saved!', 'success');
+    } catch (error) {
+        console.error('Error saving publication:', error);
+        showAlert('Failed to save publication', 'error');
+    }
 }
 
-function deletePublication(index) {
-    if (confirm('Delete?')) { publications.splice(index, 1); savePublications(); loadPublicationsTable(); showAlert('Deleted!', 'success'); }
+async function deletePublication(index) {
+    if (confirm('Delete?')) {
+        const p = publications[index];
+        try {
+            await fetch(`/api/publications/${p._id}`, { method: 'DELETE' });
+            publications.splice(index, 1);
+            loadPublicationsTable();
+            showAlert('Deleted!', 'success');
+        } catch (error) {
+            console.error('Error deleting publication:', error);
+            showAlert('Failed to delete', 'error');
+        }
+    }
 }
 
 /* ==================== USERS ==================== */
@@ -761,63 +804,67 @@ function loadUsersTable() {
 }
 
 function openUserForm() { /* Simplified */ }
-function deleteUser(index) { if (confirm('Delete?')) { users.splice(index, 1); saveUsers(); loadUsersTable(); } }
+
+async function deleteUser(index) {
+    if (confirm('Delete?')) {
+        const u = users[index];
+        try {
+            await fetch(`/api/users/${u._id}`, { method: 'DELETE' });
+            users.splice(index, 1);
+            loadUsersTable();
+            showAlert('User deleted!', 'success');
+        } catch (error) {
+            console.error('Error deleting user:', error);
+            showAlert('Failed to delete user', 'error');
+        }
+    }
+}
 
 /* ==================== POINTS CONFIG ==================== */
-const defaultPointsConfig = [
-    { category: 'Academic', activity: 'Paper Presentation', level: 'International', points: 30 },
-    { category: 'Academic', activity: 'Paper Presentation', level: 'National', points: 20 },
-    { category: 'Academic', activity: 'Paper Presentation', level: 'Local', points: 10 },
-    { category: 'Research', activity: 'Research Article', level: 'ISSN Journal', points: 30 },
-    { category: 'Research', activity: 'Research Article', level: 'Periodicals', points: 20 },
-    { category: 'Research', activity: 'Research Article', level: 'Magazines', points: 15 },
-    { category: 'Literary', activity: 'Poem/Story/Essay', level: 'Magazines', points: 12 },
-    { category: 'Literary', activity: 'Poem/Story/Essay', level: 'Periodicals', points: 12 },
-    { category: 'Literary', activity: 'Poem/Story/Essay', level: 'Online', points: 8 },
-    { category: 'Blogs', activity: 'Academic blog post', level: 'Educational blog', points: 5 },
-    { category: 'Books', activity: 'Academic with ISBN', level: '—', points: 40 },
-    { category: 'Books', activity: 'Academic without ISBN', level: '—', points: 30 },
-    { category: 'Books', activity: 'Literary Book', level: '—', points: 20 },
-    { category: 'Media', activity: 'Article/Essay', level: 'Newspaper', points: 25 },
-    { category: 'Media', activity: 'Letter', level: '—', points: 8 },
-    { category: 'Media', activity: 'Opinions', level: '—', points: 8 },
-    { category: 'Creative', activity: 'Art/Photo', level: 'Recognised', points: 10 },
-    { category: 'Competition', activity: '1st Prize', level: 'International', points: 30 },
-    { category: 'Competition', activity: '2nd Prize', level: 'International', points: 25 },
-    { category: 'Competition', activity: '3rd Prize', level: 'International', points: 20 },
-    { category: 'Competition', activity: '1st Prize', level: 'National', points: 25 },
-    { category: 'Competition', activity: '2nd Prize', level: 'National', points: 20 },
-    { category: 'Competition', activity: '3rd Prize', level: 'National', points: 15 },
-    { category: 'Competition', activity: '1st Prize', level: 'State', points: 20 },
-    { category: 'Competition', activity: '2nd Prize', level: 'State', points: 15 },
-    { category: 'Competition', activity: '3rd Prize', level: 'State', points: 10 },
-    { category: 'Competition', activity: '1st Prize', level: 'Local', points: 10 },
-    { category: 'Competition', activity: '2nd Prize', level: 'Local', points: 8 },
-    { category: 'Competition', activity: '3rd Prize', level: 'Local', points: 6 }
-];
-
-function loadPointsConfig() {
-    let config = JSON.parse(localStorage.getItem('ogea_points_config') || 'null') || [...defaultPointsConfig];
-    const tbody = document.getElementById('pointsConfigBody');
-    tbody.innerHTML = config.map((item, i) => `
-        <tr>
-            <td>${item.category}</td><td>${item.activity}</td><td>${item.level}</td>
-            <td><input type="number" value="${item.points}" onchange="updatePointValue(${i},this.value)" style="width:80px;padding:8px;border:1px solid #e2e8f0;border-radius:6px;text-align:center;"></td>
-        </tr>
-    `).join('');
+async function loadPointsConfig() {
+    try {
+        const res = await fetch('/api/config/points');
+        const config = await res.json();
+        
+        const tbody = document.getElementById('pointsConfigBody');
+        tbody.innerHTML = config.map((item, i) => `
+            <tr>
+                <td>${item.category}</td><td>${item.activity}</td><td>${item.level}</td>
+                <td><input type="number" value="${item.points}" onchange="updatePointValue(${i},this.value)" style="width:80px;padding:8px;border:1px solid #e2e8f0;border-radius:6px;text-align:center;"></td>
+            </tr>
+        `).join('');
+    } catch (error) {
+        console.error('Error loading config:', error);
+    }
 }
 
-function updatePointValue(index, value) {
-    let config = JSON.parse(localStorage.getItem('ogea_points_config') || 'null') || [...defaultPointsConfig];
-    config[index].points = parseInt(value) || 0;
-    localStorage.setItem('ogea_points_config', JSON.stringify(config));
+async function updatePointValue(index, value) {
+    try {
+        const res = await fetch('/api/config/points');
+        const config = await res.json();
+        config[index].points = parseInt(value) || 0;
+        
+        await fetch('/api/config/points', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ items: config })
+        });
+    } catch (error) {
+        console.error('Error updating config:', error);
+        showAlert('Failed to update config', 'error');
+    }
 }
 
-function resetPointsConfig() {
+async function resetPointsConfig() {
     if (confirm('Reset all points to default?')) {
-        localStorage.removeItem('ogea_points_config');
-        loadPointsConfig();
-        showAlert('Points reset!', 'success');
+        try {
+            await fetch('/api/config/points/reset', { method: 'POST' });
+            await loadPointsConfig();
+            showAlert('Points reset!', 'success');
+        } catch (error) {
+            console.error('Error resetting config:', error);
+            showAlert('Failed to reset config', 'error');
+        }
     }
 }
 
@@ -897,12 +944,19 @@ function initGlobalSearch() {
         });
     }
 }
+
 function initLogout() {
     const btn = document.getElementById('logoutBtn');
-    if (btn) btn.addEventListener('click', () => { 
+    if (btn) btn.addEventListener('click', async () => { 
         if (confirm('Logout?')) {
-            localStorage.removeItem('ogea_admin_session');
-            window.location.href = 'admin-login.html'; 
+            try {
+                await fetch('/api/auth/logout', { method: 'POST' });
+                localStorage.removeItem('ogea_admin_session');
+                window.location.href = 'admin-login.html'; 
+            } catch (error) {
+                console.error('Logout error:', error);
+                window.location.href = 'admin-login.html'; 
+            }
         }
     });
 }
@@ -940,4 +994,4 @@ function showAlert(message, type = 'info') {
     setTimeout(() => { if (div.parentElement) div.remove(); }, 4000);
 }
 
-console.log('👑 OGEA Admin JS Loaded - Manual Points | Poster Uploads | Program Images');
+console.log('👑 OGEA Admin JS Loaded - MongoDB Powered');

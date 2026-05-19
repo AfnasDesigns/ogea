@@ -525,11 +525,6 @@
 
     <!-- ==================== SCRIPTS ==================== -->
     <script>
-        // ==================== CREDENTIALS ====================
-        const VALID_EMAIL = 'outreachdhdc@gmail.com';
-        const VALID_PASSWORD = 'outreachdhdc202';
-        const ADMIN_PAGE = 'admin.html';
-
         // ==================== DOM ELEMENTS ====================
         const loginForm = document.getElementById('loginForm');
         const emailInput = document.getElementById('email');
@@ -540,6 +535,7 @@
         const loginSuccess = document.getElementById('loginSuccess');
         const passwordToggle = document.getElementById('passwordToggle');
         const rememberMe = document.getElementById('rememberMe');
+        const ADMIN_PAGE = 'admin.html';
 
         // ==================== PASSWORD TOGGLE ====================
         passwordToggle.addEventListener('click', function() {
@@ -554,21 +550,18 @@
         });
 
         // ==================== CHECK SAVED SESSION ====================
-        function checkSavedSession() {
-            const saved = localStorage.getItem('ogea_admin_session');
-            if (saved) {
-                const session = JSON.parse(saved);
-                const now = new Date().getTime();
-                const expiry = session.expiry || 0;
+        async function checkSavedSession() {
+            try {
+                const response = await fetch('/api/auth/session');
+                const session = await response.json();
                 
-                if (now < expiry && session.email === VALID_EMAIL) {
+                if (session.loggedIn) {
                     // Valid session found, redirect to admin
                     window.location.href = ADMIN_PAGE;
                     return true;
-                } else {
-                    // Expired session
-                    localStorage.removeItem('ogea_admin_session');
                 }
+            } catch (error) {
+                console.error('Session check failed:', error);
             }
             return false;
         }
@@ -583,7 +576,7 @@
         }
 
         // ==================== FORM SUBMISSION ====================
-        loginForm.addEventListener('submit', function(e) {
+        loginForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             
             // Hide previous messages
@@ -614,55 +607,54 @@
                 return;
             }
             
-            // Check credentials
-            if (email === VALID_EMAIL && password === VALID_PASSWORD) {
-                // Success!
-                showSuccess();
-                
-                // Save session
-                if (rememberMe.checked) {
-                    // Save for 7 days
-                    const session = {
-                        email: email,
-                        loginTime: new Date().toISOString(),
-                        expiry: new Date().getTime() + (7 * 24 * 60 * 60 * 1000) // 7 days
-                    };
-                    localStorage.setItem('ogea_admin_session', JSON.stringify(session));
-                    localStorage.setItem('ogea_remembered_email', email);
+            // Loading state
+            loginBtn.classList.add('loading');
+
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Success!
+                    showSuccess();
+                    
+                    if (rememberMe.checked) {
+                        localStorage.setItem('ogea_remembered_email', email);
+                    } else {
+                        localStorage.removeItem('ogea_remembered_email');
+                    }
+                    
+                    // Redirect after short delay
+                    setTimeout(() => {
+                        window.location.href = ADMIN_PAGE;
+                    }, 1200);
                 } else {
-                    // Save for current session only (24 hours)
-                    const session = {
-                        email: email,
-                        loginTime: new Date().toISOString(),
-                        expiry: new Date().getTime() + (24 * 60 * 60 * 1000) // 24 hours
-                    };
-                    localStorage.setItem('ogea_admin_session', JSON.stringify(session));
-                    localStorage.removeItem('ogea_remembered_email');
+                    // Invalid credentials
+                    showError(data.message || 'Login failed. Please try again.');
+                    
+                    if (data.message && data.message.includes('email')) {
+                        emailInput.classList.add('error');
+                    } else {
+                        passwordInput.classList.add('error');
+                        passwordInput.value = '';
+                        passwordInput.focus();
+                    }
+                    
+                    // Shake effect
+                    loginBtn.style.animation = 'none';
+                    loginBtn.offsetHeight; // Trigger reflow
+                    loginBtn.style.animation = 'shake 0.5s ease';
+                    loginBtn.classList.remove('loading');
                 }
-                
-                // Redirect after short delay
-                setTimeout(() => {
-                    window.location.href = ADMIN_PAGE;
-                }, 1200);
-                
-            } else {
-                // Invalid credentials
-                if (email !== VALID_EMAIL) {
-                    showError('Invalid email address. Please try again.');
-                    emailInput.classList.add('error');
-                } else {
-                    showError('Incorrect password. Please try again.');
-                    passwordInput.classList.add('error');
-                }
-                
-                // Shake effect
-                loginBtn.style.animation = 'none';
-                loginBtn.offsetHeight; // Trigger reflow
-                loginBtn.style.animation = 'shake 0.5s ease';
-                
-                // Clear password field for security
-                passwordInput.value = '';
-                passwordInput.focus();
+            } catch (error) {
+                console.error('Login error:', error);
+                showError('A network error occurred. Please try again.');
+                loginBtn.classList.remove('loading');
             }
         });
 
@@ -677,9 +669,6 @@
         function showSuccess() {
             loginError.classList.remove('show');
             loginSuccess.classList.add('show');
-            
-            // Show loading state
-            loginBtn.classList.add('loading');
             
             // Add success indicators
             emailInput.classList.add('success');
@@ -701,9 +690,9 @@
         });
 
         // ==================== INITIALIZATION ====================
-        function init() {
+        async function init() {
             // Check if already logged in
-            if (checkSavedSession()) {
+            if (await checkSavedSession()) {
                 return; // Redirecting...
             }
             
@@ -719,8 +708,7 @@
                 }
             }, 500);
             
-            console.log('🔐 OGEA Admin Login Ready');
-            console.log('👤 Email: ' + VALID_EMAIL);
+            console.log('🔐 OGEA Admin Login Ready (MongoDB Edition)');
         }
 
         // Start the app
