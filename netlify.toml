@@ -5,7 +5,6 @@
 
 [functions]
   node_bundler = "esbuild"
-  external_node_modules = ["mongodb", "connect-mongo", "cloudinary", "express"]
 
 [[redirects]]
   from = "/api/*"
