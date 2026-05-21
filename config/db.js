@@ -4,10 +4,12 @@ let db = null;
 let client = null;
 
 async function connectDB() {
+    if (db) return db;
+
     try {
         const uri = process.env.MONGODB_URI;
         if (!uri) {
-            throw new Error('MONGODB_URI is not defined in .env file');
+            throw new Error('MONGODB_URI is not defined in environment variables');
         }
 
         client = new MongoClient(uri);
@@ -24,7 +26,7 @@ async function connectDB() {
         return db;
     } catch (error) {
         console.error('❌ MongoDB connection failed:', error.message);
-        process.exit(1);
+        throw error;
     }
 }
 
