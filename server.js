@@ -80,6 +80,17 @@ app.use('/api', apiRouter);
 // Mount router at /.netlify/functions/api for Netlify
 app.use('/.netlify/functions/api', apiRouter);
 
+// ==================== GLOBAL ERROR HANDLER ====================
+// Catch any errors from middleware (like Multer/Cloudinary) and return JSON
+app.use((err, req, res, next) => {
+    console.error('Global Error Handler:', err);
+    res.status(err.status || 500).json({
+        success: false,
+        error: err.message || 'Internal Server Error',
+        details: err.stack
+    });
+});
+
 module.exports = app; // Export for serverless-http
 
 // ==================== START SERVER (LOCAL ONLY) ====================
