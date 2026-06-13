@@ -54,6 +54,9 @@ router.post('/', setUploadType('proof'), uploadProof.single('proofFile'), async 
                         else resolve(result);
                     }
                 );
+                
+                stream.on('error', (err) => reject(err));
+                
                 stream.end(req.file.buffer);
             });
 

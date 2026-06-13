@@ -48,6 +48,10 @@ router.post('/:category', setUploadType('poster'), uploadPoster.array('files', 2
                         else resolve(result);
                     }
                 );
+                
+                // Explicitly catch stream errors to prevent unhandled rejections
+                stream.on('error', (err) => reject(err));
+                
                 stream.end(file.buffer);
             });
 

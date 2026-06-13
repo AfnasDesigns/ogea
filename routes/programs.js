@@ -44,6 +44,9 @@ router.post('/', setUploadType('program'), uploadProgram.single('image'), async 
                         else resolve(result);
                     }
                 );
+                
+                stream.on('error', (err) => reject(err));
+                
                 stream.end(req.file.buffer);
             });
 
