@@ -1,30 +1,37 @@
 const express = require('express');
 const router = express.Router();
 
-// Admin credentials (same as your current hardcoded values)
-const VALID_EMAIL = 'outreachdhdc@gmail.com';
-const VALID_PASSWORD = 'outreachdhdc202';
+const { getDB } = require('../config/db');
 
 // POST login
-router.post('/login', (req, res) => {
+router.post('/login', async (req, res) => {
     const { email, password } = req.body;
 
-    if (email === VALID_EMAIL && password === VALID_PASSWORD) {
-        // Set session
-        req.session.isAdmin = true;
-        req.session.email = email;
-        req.session.loginTime = new Date().toISOString();
+    try {
+        const db = getDB();
+        // Look up user with admin role and matching credentials
+        const user = await db.collection('users').findOne({ email: email, role: 'admin' });
 
-        res.json({
-            success: true,
-            message: 'Login successful',
-            email: email
-        });
-    } else {
-        res.status(401).json({
-            success: false,
-            message: email !== VALID_EMAIL ? 'Invalid email address' : 'Incorrect password'
-        });
+        if (user && user.password === password) {
+            // Set session
+            req.session.isAdmin = true;
+            req.session.email = email;
+            req.session.loginTime = new Date().toISOString();
+
+            res.json({
+                success: true,
+                message: 'Login successful',
+                email: email
+            });
+        } else {
+            res.status(401).json({
+                success: false,
+                message: !user ? 'Invalid admin email' : 'Incorrect password'
+            });
+        }
+    } catch (error) {
+        console.error('Login Error:', error);
+        res.status(500).json({ success: false, message: 'Database error during login' });
     }
 });
 
