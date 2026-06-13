@@ -38,21 +38,15 @@ router.post('/:category', setUploadType('poster'), uploadPoster.array('files', 2
 
         const uploadedPosters = [];
 
-        // Upload each file to Cloudinary manually
+        // Upload each file to Cloudinary manually using Base64 (safest for serverless/Lambda)
         for (const file of req.files) {
-            const uploadResult = await new Promise((resolve, reject) => {
-                const stream = cloudinary.uploader.upload_stream(
-                    { folder: 'ogea/posters' },
-                    (error, result) => {
-                        if (error) reject(error);
-                        else resolve(result);
-                    }
-                );
-                
-                // Explicitly catch stream errors to prevent unhandled rejections
-                stream.on('error', (err) => reject(err));
-                
-                stream.end(file.buffer);
+            // Convert buffer to base64 data URI
+            const b64 = Buffer.from(file.buffer).toString("base64");
+            const dataURI = "data:" + file.mimetype + ";base64," + b64;
+            
+            const uploadResult = await cloudinary.uploader.upload(dataURI, {
+                folder: 'ogea/posters',
+                resource_type: 'auto'
             });
 
             uploadedPosters.push({

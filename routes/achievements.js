@@ -46,18 +46,13 @@ router.post('/', setUploadType('proof'), uploadProof.single('proofFile'), async 
                 return res.status(500).json({ error: 'Cloudinary API Key is missing. Please add it to your environment variables.' });
             }
 
-            const uploadResult = await new Promise((resolve, reject) => {
-                const stream = cloudinary.uploader.upload_stream(
-                    { folder: 'ogea/proofs' },
-                    (error, result) => {
-                        if (error) reject(error);
-                        else resolve(result);
-                    }
-                );
-                
-                stream.on('error', (err) => reject(err));
-                
-                stream.end(req.file.buffer);
+            // Convert buffer to base64 data URI
+            const b64 = Buffer.from(req.file.buffer).toString("base64");
+            const dataURI = "data:" + req.file.mimetype + ";base64," + b64;
+            
+            const uploadResult = await cloudinary.uploader.upload(dataURI, {
+                folder: 'ogea/proofs',
+                resource_type: 'auto'
             });
 
             data.proofFile = uploadResult.secure_url;
