@@ -1,21 +1,8 @@
 const multer = require('multer');
-const { CloudinaryStorage } = require('multer-storage-cloudinary');
-const cloudinary = require('../config/cloudinary');
 
-const storage = new CloudinaryStorage({
-    cloudinary: cloudinary,
-    params: async (req, file) => {
-        let folder = 'ogea/general';
-        if (req.uploadType === 'poster') folder = 'ogea/posters';
-        else if (req.uploadType === 'program') folder = 'ogea/programs';
-        else if (req.uploadType === 'proof') folder = 'ogea/proofs';
-
-        return {
-            folder: folder,
-            allowed_formats: ['jpg', 'jpeg', 'png', 'gif', 'pdf', 'webp'],
-        };
-    }
-});
+// Use MemoryStorage to prevent unhandled promise rejections from CloudinaryStorage
+// We will upload to Cloudinary manually in the route handlers
+const storage = multer.memoryStorage();
 
 const upload = multer({ 
     storage: storage,

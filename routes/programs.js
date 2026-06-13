@@ -16,25 +16,47 @@ router.get('/', async (req, res) => {
     }
 });
 
-// POST new program (with optional image)
+// POST new program
 router.post('/', setUploadType('program'), uploadProgram.single('image'), async (req, res) => {
     try {
         const db = getDB();
+        const cloudinary = require('../config/cloudinary');
+
         const data = {
-            title: req.body.title || '',
-            description: req.body.description || '',
+            title: req.body.title,
+            description: req.body.description,
+            date: req.body.date,
             status: req.body.status || 'upcoming',
-            date: req.body.date || 'TBA',
-            image: req.file ? '/uploads/programs/' + req.file.filename : '',
-            createdAt: new Date().toISOString()
+            uploadedAt: new Date().toISOString()
         };
+
+        if (req.file) {
+            // Validate Cloudinary Config
+            if (!process.env.CLOUDINARY_API_KEY) {
+                return res.status(500).json({ error: 'Cloudinary API Key is missing. Please add it to your environment variables.' });
+            }
+
+            const uploadResult = await new Promise((resolve, reject) => {
+                const stream = cloudinary.uploader.upload_stream(
+                    { folder: 'ogea/programs' },
+                    (error, result) => {
+                        if (error) reject(error);
+                        else resolve(result);
+                    }
+                );
+                stream.end(req.file.buffer);
+            });
+
+            data.image = uploadResult.secure_url;
+        }
 
         const result = await db.collection('programs').insertOne(data);
         data._id = result.insertedId;
         res.status(201).json(data);
     } catch (error) {
         console.error('Error saving program:', error);
-        res.status(500).json({ error: 'Failed to save program' });
+        const errMsg = error.message || (error.http_code ? JSON.stringify(error) : 'Failed to save program');
+        res.status(500).json({ error: errMsg });
     }
 });
 

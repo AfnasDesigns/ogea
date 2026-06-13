@@ -25,27 +25,51 @@ router.post('/:category', setUploadType('poster'), uploadPoster.array('files', 2
     try {
         const db = getDB();
         const category = req.params.category;
+        const cloudinary = require('../config/cloudinary');
 
         if (!req.files || req.files.length === 0) {
             return res.status(400).json({ error: 'No files uploaded' });
         }
 
-        const posters = req.files.map(file => ({
-            category,
-            src: '/uploads/posters/' + file.filename,
-            name: file.originalname,
-            uploadedAt: new Date().toISOString()
-        }));
+        // Validate Cloudinary Config
+        if (!process.env.CLOUDINARY_API_KEY) {
+            return res.status(500).json({ error: 'Cloudinary API Key is missing. Please add it to your environment variables.' });
+        }
 
-        const result = await db.collection('posters').insertMany(posters);
+        const uploadedPosters = [];
+
+        // Upload each file to Cloudinary manually
+        for (const file of req.files) {
+            const uploadResult = await new Promise((resolve, reject) => {
+                const stream = cloudinary.uploader.upload_stream(
+                    { folder: 'ogea/posters' },
+                    (error, result) => {
+                        if (error) reject(error);
+                        else resolve(result);
+                    }
+                );
+                stream.end(file.buffer);
+            });
+
+            uploadedPosters.push({
+                category,
+                src: uploadResult.secure_url, // Use the secure Cloudinary URL
+                name: file.originalname,
+                uploadedAt: new Date().toISOString()
+            });
+        }
+
+        const result = await db.collection('posters').insertMany(uploadedPosters);
         res.status(201).json({
-            message: `${posters.length} posters uploaded`,
-            count: posters.length,
+            message: `${uploadedPosters.length} posters uploaded`,
+            count: uploadedPosters.length,
             ids: Object.values(result.insertedIds)
         });
     } catch (error) {
         console.error('Error uploading posters:', error);
-        res.status(500).json({ error: 'Failed to upload posters' });
+        // Extract inner error message if available
+        const errMsg = error.message || (error.http_code ? JSON.stringify(error) : 'Failed to upload posters');
+        res.status(500).json({ error: errMsg });
     }
 });
 

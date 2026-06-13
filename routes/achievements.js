@@ -20,6 +20,8 @@ router.get('/', async (req, res) => {
 router.post('/', setUploadType('proof'), uploadProof.single('proofFile'), async (req, res) => {
     try {
         const db = getDB();
+        const cloudinary = require('../config/cloudinary');
+
         const data = {
             fullName: req.body.fullName || '',
             class: req.body.class || '',
@@ -33,18 +35,40 @@ router.post('/', setUploadType('proof'), uploadProof.single('proofFile'), async 
             language: req.body.language || '',
             referenceLink: req.body.referenceLink || '',
             notes: req.body.notes || '',
-            proofFile: req.file ? '/uploads/proofs/' + req.file.filename : '',
             submittedAt: new Date().toISOString(),
             status: 'pending',
             pointsAwarded: 0
         };
+
+        if (req.file) {
+            // Validate Cloudinary Config
+            if (!process.env.CLOUDINARY_API_KEY) {
+                return res.status(500).json({ error: 'Cloudinary API Key is missing. Please add it to your environment variables.' });
+            }
+
+            const uploadResult = await new Promise((resolve, reject) => {
+                const stream = cloudinary.uploader.upload_stream(
+                    { folder: 'ogea/proofs' },
+                    (error, result) => {
+                        if (error) reject(error);
+                        else resolve(result);
+                    }
+                );
+                stream.end(req.file.buffer);
+            });
+
+            data.proofFile = uploadResult.secure_url;
+        } else {
+            data.proofFile = '';
+        }
 
         const result = await db.collection('achievements').insertOne(data);
         data._id = result.insertedId;
         res.status(201).json(data);
     } catch (error) {
         console.error('Error saving achievement:', error);
-        res.status(500).json({ error: 'Failed to save achievement' });
+        const errMsg = error.message || (error.http_code ? JSON.stringify(error) : 'Failed to save achievement');
+        res.status(500).json({ error: errMsg });
     }
 });
 
