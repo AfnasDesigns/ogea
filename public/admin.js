@@ -368,15 +368,15 @@ let selectedPosters = { mission200: [], mission1: [] };
 let allPosters = { mission200: [], mission1: [] };
 
 function initPosterUploads() {
-    setupBulkPosterUpload('mission200File', 'mission200Posters', 'mission200');
-    setupBulkPosterUpload('mission1File', 'mission1Posters', 'mission1');
+    setupBulkPosterUpload('mission200File', 'mission200', 'mission200Posters');
+    setupBulkPosterUpload('mission1File', 'mission1', 'mission1Posters');
     initPosterSearch();
 }
 
-function setupBulkPosterUpload(inputId, containerId, storageKey) {
+function setupBulkPosterUpload(inputId, storageKey, containerId) {
     const input = document.getElementById(inputId);
     if (!input) return;
-    
+
     input.addEventListener('change', async function() {
         const files = this.files;
         if (!files.length) return;
@@ -386,39 +386,49 @@ function setupBulkPosterUpload(inputId, containerId, storageKey) {
         const progressText = document.getElementById(`${storageKey}ProgressText`);
         
         if (progressDiv) progressDiv.style.display = 'block';
-        if (progressFill) progressFill.style.width = '50%';
-        if (progressText) progressText.textContent = `Uploading ${files.length} files... Please wait.`;
         
-        const formData = new FormData();
+        let successCount = 0;
+        let failCount = 0;
+
+        // Upload files sequentially to avoid Netlify's 6MB payload limit
         for (let i = 0; i < files.length; i++) {
-            formData.append('files', files[i]);
+            if (progressFill) progressFill.style.width = `${((i) / files.length) * 100}%`;
+            if (progressText) progressText.textContent = `Uploading file ${i + 1} of ${files.length}...`;
+            
+            const formData = new FormData();
+            formData.append('files', files[i]); // API expects 'files' array
+            
+            try {
+                const res = await fetch(`/api/posters/${storageKey}`, { method: 'POST', body: formData });
+                if (res.ok) {
+                    successCount++;
+                } else {
+                    failCount++;
+                    console.error(`File ${i+1} failed to upload:`, await res.text());
+                }
+            } catch (error) {
+                failCount++;
+                console.error(`File ${i+1} upload error:`, error);
+            }
         }
         
-        try {
-            const res = await fetch(`/api/posters/${storageKey}`, { method: 'POST', body: formData });
-            const data = await res.json();
-            
-            if (res.ok) {
-                if (progressFill) progressFill.style.width = '100%';
-                if (progressText) progressText.textContent = `Upload complete!`;
-                
-                await fetchPosters(storageKey);
-                posterPages[storageKey] = 0;
-                displayPostersPaginated(containerId, storageKey);
-                
-                setTimeout(() => {
-                    if (progressDiv) progressDiv.style.display = 'none';
-                    if (progressFill) progressFill.style.width = '0%';
-                }, 2000);
-                
-                showAlert(`✅ ${files.length} posters uploaded successfully!`, 'success');
-            } else {
-                throw new Error(data.error || 'Upload failed');
-            }
-        } catch (error) {
-            console.error('Upload error:', error);
-            if (progressText) progressText.textContent = `Upload failed: ${error.message}`;
-            showAlert('Failed to upload posters', 'error');
+        // Finalize
+        if (progressFill) progressFill.style.width = '100%';
+        if (progressText) progressText.textContent = `Upload complete!`;
+        
+        await fetchPosters(storageKey);
+        posterPages[storageKey] = 0;
+        displayPostersPaginated(containerId, storageKey);
+        
+        setTimeout(() => {
+            if (progressDiv) progressDiv.style.display = 'none';
+            if (progressFill) progressFill.style.width = '0%';
+        }, 2000);
+        
+        if (failCount === 0) {
+            showAlert(`✅ ${successCount} posters uploaded successfully!`, 'success');
+        } else {
+            showAlert(`⚠️ ${successCount} uploaded, ${failCount} failed.`, 'warning');
         }
         
         this.value = '';
